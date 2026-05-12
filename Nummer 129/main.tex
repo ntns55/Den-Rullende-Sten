@@ -1,0 +1,374 @@
+%\usepackage{geometry}
+
+%\usepackage{graphicx}
+%\usepackage{color,framed}
+%\usepackage[print,1to1]{booklet} %print option switches to landscape
+%\pagespersignature{16}
+%\setpdftargetpages
+\documentclass[letterpaper,12pt]{memoir}
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+
+\usepackage[pdftex]{graphicx}
+%block size info
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+\usepackage[print,1to1]{booklet} %print option switches to landscape
+\pagespersignature{16}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
+  {\end{tcolorbox}}
+
+
+\usepackage{xparse}
+\usepackage{wrapfig}
+
+% Justérbare standarder for sidebar i spalter
+\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+\setcounter{sidebarlines}{14}
+\setlength{\sidebarwidth}{0.42\columnwidth}
+
+
+% ====== Utilities ======
+\newcommand{\separator}{%
+  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.75\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries
+        \resizebox{1\textwidth}{!}{#3}%
+      }}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+
+
+
+\begin{document}
+\pdfpageheight=\paperwidth
+\pdfpagewidth=\paperheight
+\paperwidth=\pdfpagewidth
+\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 129}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{konge.png}
+{Leder}
+{Dorian Vinterkrone}
+{Kongen der stod alene mod mørket}
+{}
+
+\vspace{.75\baselineskip}
+
+
+% ====== Lead story (Front page) ======
+\par\medskip
+\headline{Kongen der stod alene mod mørket}
+\par\medskip
+\deck{Da verden vendte ryggen til, blev Dorian Vinterkrone stående.}
+\par\medskip
+\byline{Michael Wulff}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{D}{er} findes helte i sagnene, og så findes der helte, der lever iblandt os. Kong Dorian Vinterkrone af A'kastin tilhører den sidste kategori.
+
+Dette er ikke historien om en konge, der arvede sin storhed. Det er historien om en mand, der bar et rige på sine skuldre, mens andre vendte blikket bort.
+
+Hvor andre herskere talte om alliancer, reformer og ansvar, gik Kong Dorian forrest. Med hans politiske pres bandt han Sydland samme. Han sikrede forsyninger, genopbyggede byer og skabte stabilitet i egne, som længe havde været glemt af både adel og imperiale råd.
+
+\begin{pullquote}
+“Det er heroisk i ordets reneste betydning. Han gjorde det, fordi det var nødvendigt, ikke fordi nogen bad ham om det,”
+\\
+\textit{– Arkivmester Selenn, militærhistoriker.}
+\end{pullquote}
+
+Sydland blomstrede, ikke på grund af løfter, men fordi Kong Dorian stod som garant for sikkerhed, arbejde og fremtid.
+
+Mange hævder, at Letho er en ødemark som ingen kan tvinge under sig. Kong Dorian beviste det modsatte. Gennem beskyttelse af handelsveje formåede han at drive Dæmonerne som længe har været i regionen bort. Han A’kastin til den eneste reelle stabiliserende magt i området i samarbejde med Sydlands ledelse.
+
+\begin{pullquote}
+"Han gjorde det umulige."
+\\
+\textit{– Praktikant ved Den Rullende Sten.}
+\end{pullquote}
+Da dæmonerne igen begyndte at sive ind i grænseegnene, var det Kong Dorian, der slog alarm. Det var Kong Dorian, der bad om fælles handling. Det var Kong Dorian, der krævede, at verden stod sammen.
+
+Men verden svigtede.
+
+Ingen legioner kom. Ingen imperiale hære marcherede. Og mens den kapitalistike adel debatterede, rykkede dæmonerne frem.
+
+\begin{pullquote}
+"Det er en tragedie, men også en sandhed. Dæmonerne tog området igen, fordi Kong Dorian blev efterladt alene,"
+\\
+\textit{– Gert Günther Gammelgaard}
+\end{pullquote}
+
+På gaderne er der ingen tvivl.
+
+\begin{pullquote}
+"Hvis han ikke er en helt, så findes der ingen,"
+\\
+\textit{– Lokal smed fra Marcusstadt}
+\end{pullquote}
+
+\begin{pullquote}
+"Han kæmpede for os, mens andre gemte sig bag titler,"
+\\
+\textit{– Yver-slynge Væver fra Permersland}
+\end{pullquote}
+
+\begin{pullquote}
+"Var han gået bort havde jeg personligt gået forest og efterspurgt Kelllwan selv om at gøre ham til Helgen."
+\\
+\textit{– Lokal Kelllwan Præst af Nordland}
+\end{pullquote}
+
+Der tales nu åbent om det, mange længe har tænkt. At Aurelia Fjendebane bør adoptere Kong Dorian ind i Fjendebane-slægtens linje. Dette vil være for at anerkende den mand, der allerede har gjort sig fortjent til at overtage den Imperielle trone.
+
+\begin{pullquote}
+“Imperiet har brug for helte. Ikke administratorer. Dorian er det klare valg,”
+\\
+\textit{– Anonym Embedsmand}
+\end{pullquote}
+
+\section*{Nyheder}
+\subsection*{Hvad skete der ved Sydporten?}
+\textit{- Gert Günther Gammelgaard}\\
+Vi har fået eksklusiv indsigt i hvad skete ved Sydporten da Kejser Erik Fjendebane døde. En barde er kommet frem med hans version af hendelserne.
+
+\begin{pullquote}
+Syng os, gudinde, om vreden der greb Fjendebane Conrad,\\
+vreden, den fæle, som voldte Nordfolket tusinde kvaler, \\
+sendte behjertede sjæle af talrige helte til Morwen\\
+og lod dem selv blive slængt som æde for hurtige hunde,\\
+grådige gribbe og ravne så Kelllwan's vilje blev fuldbragt -\\
+helt fra den første stund da striden begyndte imellem\\
+folkenes drot Erik og gudernes lige Conrad.\\\\
+Hvem blandt guderne var det der satte dem op mod hinanden?\\
+Mordekai og Daikia's søn! For grebet af harme mod Kejseren\\
+lod han en hærgende pest bryde ud i hæren, så krigsfolk\\
+ynkeligt døde. \\\\
+Da kom fader og søn til slag, foran deres hær.  \\
+Conrad, Helgen af Kelllwan og Fjendebane af blod, \\
+og hans fader Erik, retfærdig og god, gik da i kamp med ilde sind.\\
+Da kampens stund kom bad Conrad hans fader:\\\\
+"Nordfolket's hædrede søn, behersker af mænd, Erik!\\
+Dig vil jeg vende mig til fra begyndelsen lige til enden, \\
+da du er drot over mange og Kelllwan har givet dig scepter\\
+ligesom lovsigeret til at lede de mange du styrer.\\
+Du har det sidste ord, men først skal du lytte til andre,\\
+og hvad rigtigt og godt en anden har trang til at sige,\\
+det skal du sætte i værk. Thi hæderen for det vil du få.\\
+Så skal jeg da gøre klart hvad jeg tror er det bedste at gøre.\\
+Klogere råd er der ingen der nu er i stand til at gi dig,\\
+end hvad jeg mente engang og fastholdt lige fra dagen\\
+hvor du, ætling af Kelllwan, trods al min vrede\\
+valgte dette slag uden at lytte til mig.\\
+Jeg råded dig til at la være, stærkt og indstændigt.\\
+Du fulgte dit hjertes storagtige stemme\\
+og lod vor tapreste mand, som evige guder har æret\\
+ramme af skam. Du har taget hans pris. Nu må vi omsider\\
+finde en vej for igen at få ham formildet og omstemt,\\
+både med strålende gaver og sød og smigrende tale."\\\\
+Dette var svaret han fik af mændenes drot Erik:\\
+"Hvalp, dig må jeg slås med først når du taler så dumt.\\
+Det har jeg lov til i rådet. Så bliv ikke vred når jeg gør det!\\
+Det var dig selv der beklikked mit mod I Imperiets påhør, \\
+kaldet mig fej og forknyt. Det var Nordfolk alle.\\
+Unge som gamle har de jo hørt den svada du kom med.\\
+Du har af Kelllwan's søn fået ét, men ikke det andet:\\
+Kongeligt scepter, det fik du, og krav på den højeste hæder,\\
+mod blev dig derimod nægtet, men mod er den yderste styrke.\\
+Er du forrykt? Hvor kan du dog tro at Nordfolket's sønner\\
+er så forknyttet og feje som du har erklæret?\\
+Er du nu selv så forhippet på straks at rejse tilbage: \\
+Rejs da! Vejen er fri, dine karavane ligger for spand,\\
+alle de mange der fulgte din færd fra det rige Nordland.\\
+Men så forblir de andre Nordfolk med flagrende lokker\\
+her til vi indtar Letho. Og dersom de også vælger\\
+flugt og vil rejse tilabge til fædrenelandet, vil vi to,\\
+jeg og Halvar, slås til vi når til en ende der venter\\
+Ewen's stad. Det er dog en gud der har sendt os herover!"\\
+\textit{– Skjalden Marinus Vedsbed}
+\end{pullquote}
+
+\subsection*{}
+
+\section*{Religion}
+\subsection*{Kelllwan's Ord om Magi}
+En præst vandrede engang blandt markerne, observerende arbejderne mens de udførte deres opgaver. Hør blomstrede omkring ham, farven på stille vand. Luften bølgede som et forhæng. Da han standsede for at undersøge en blomst, stak en bi ham på hånden. Præsten henvendte sig til en arbejder for hjælp og bemærkede for første gang de tunge handsker og frakke, hun bar. Mens hun tog sig af ham, spurgte præsten hende, hvorfor hun var klædt sådan i den trykkende varme. "For at undgå din skæbne," svarede hun. "Men der er mange tusinder af bier her," sagde præsten til hende, "og kun en stak mig. Din forsigtighed er uden tvivl uberettiget?" "Brodden er altid en overraskelse," indrømmede arbejderen. "Men det samme er bierne, der bare passerer én forbi."
+
+\section*{Reklamer}
+
+\subsection*{Bliv rig uden at arbejde!}
+
+Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger! \\[0.5em]
+
+Tjen op til \textbf{500 Fjend per dag}! \\[0.5em]
+
+Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i. \\[0.5em]
+
+Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni! \\[1em]
+
+\textit{Sådan fungerer det:}
+\begin{itemize}
+  \item Du samler 3 kongetander.
+  \item Du finder 3 venner, der arbejder under dig.
+  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
+  \item Når de finder 3 venner hver, får du hele 36 kongetand!
+\end{itemize}
+
+Med vores atraktive handelsrate tilbyder vi \textbf{5 HKG}\footnote{Handelskompagni Guld} per kongetand. \\[0.5em]
+
+Beviser du dit værd, bliver du udpeget til at være den officielle \textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.} \\[1em]
+
+\textbf{Kontakt din lokale repræsentant for Handelskompagniet i dag!}
+
+\separator
+% ====== Back matter (optional) ======
+\section*{Kontakt}
+Redaktionen, 1864 Salezstad
+
+Ønsker du en artikel i Den Rullende Sten er det altid muligt at betale 15 Fjend for en 1 sides artikel.
+
+\end{document}

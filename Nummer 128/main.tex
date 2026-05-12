@@ -1,0 +1,378 @@
+%\usepackage{geometry}
+
+%\usepackage{graphicx}
+%\usepackage{color,framed}
+%\usepackage[print,1to1]{booklet} %print option switches to landscape
+%\pagespersignature{16}
+%\setpdftargetpages
+\documentclass[letterpaper,12pt]{memoir}
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+
+\usepackage[pdftex]{graphicx}
+%block size info
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+\usepackage[print,1to1]{booklet} %print option switches to landscape
+\pagespersignature{16}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
+  {\end{tcolorbox}}
+
+
+\usepackage{xparse}
+\usepackage{wrapfig}
+
+% Justérbare standarder for sidebar i spalter
+\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+\setcounter{sidebarlines}{14}
+\setlength{\sidebarwidth}{0.42\columnwidth}
+
+
+% ====== Utilities ======
+\newcommand{\separator}{%
+  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.75\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries
+        \resizebox{1\textwidth}{!}{#3}%
+      }}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+
+
+
+\begin{document}
+\pdfpageheight=\paperwidth
+\pdfpagewidth=\paperheight
+\paperwidth=\pdfpagewidth
+\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 128}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{Handelskompagniet.jpeg}
+{"Vi Vandt"}
+{Handelsrute til Akastin Etableret}
+{Handelskompagniet's bestyrelse får bonuser}
+{}
+
+\vspace{.75\baselineskip}
+
+
+% ====== Lead story (Front page) ======
+\par\medskip
+\headline{Handelsrute til Akastin Etableret}
+\par\medskip
+\deck{Yagurt Henriksen, Næstformand for Handelskompagniet, er meget tilfreds med den nye handelsrute.}
+\par\medskip
+\byline{Gert Günther Gammelgaard}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{H}{andelskompagniet} har i denne uge officielt annonceret åbningen af en ny og kontroversiel handelsrute mellem A’kastin og Sydland, med passage direkte gennem Leltho. Ruten er allerede blevet taget i brug af de første karavaner, trods advarsler fra både lærde, præster og imperiale embedsmænd.
+
+Leltho er kendt for sin ustabile magi, hvor arakaniske strømninger opfører sig som en usynlig forgiftning af land og liv. Mutationer, monstrøse væsner og uforudsigelige magiske fænomener er veldokumenterede i regionen. Alligevel insisterer Handelskompagniet på, at netop denne rute repræsenterer fremtidens handel.
+
+\begin{pullquote}
+"Frygt er altid det første svar fra dem, der ikke forstår markedet. Ja, Leltho er farligt. Det er netop derfor, det er uudnyttet. Risikoen er høj, men afkastet tilsvarende. Og lad mig være helt klar: ingen bliver tvunget til at handle der, man kan jo altid lade være med at købe vores produkter.\footnote{Handelskompagniet står for 95\% af alt handel i Kalish}"
+\\
+\textit{– Yagurt Henriksen, Næstformand for Handelskompagniet}
+\end{pullquote}
+
+Ifølge Henriksen er Handelskompagniet fuldt ud bevidst om den risiko der er.
+
+\begin{pullquote}
+"Arakanisk forurening er ikke kaos. Det er en variabel. Og variabler kan prissættes. Vi har valgt at sætte pris til omkring 20 Fjend, hvilket er omkring det en af vores praktikanter tjener\footnote{Kilder indikere at dette kun er for Senior Praktikanter, mens almindelige praktikanter oftest er ulønnet.}."
+\\
+\textit{– Yagurt Henriksen}
+\end{pullquote}
+
+Kritikken har dog været massiv. Flere stemmer i Imperiet peger på, at ruten bevidst omgår etablerede toldposter og imperiale handelsknudepunkter. Vores egen fagkyndige troldmand udtaler:
+
+\begin{pullquote}
+"Når en rute undgår både imperiale veje og imperiale opkrævere, er det svært at kalde det innovation. Det ligner snarere en meget dyr måde at undgå at betale sin del."
+\\
+\textit{– Matheus Jürgen, Troldmand ansat ved Den Rullende Sten.}
+\end{pullquote}
+
+Også religiøse kredse har udtrykt bekymring. En præst fra Kelllwan kirken i Salezstand advarer mod at normalisere handel gennem et område hvor Kelllwans lys ikke kan hjælpe.
+
+\begin{pullquote}
+"Leltho er ikke blot ødelagt jord. Det er et åbent sår i verden. At sende karavaner gennem det, blot for profit, er at lære folk, at alt kan forsvares, hvis prisen er høj nok."
+\\
+\textit{– Kelllwan præst, Salezstand}
+\end{pullquote}
+
+På spørgsmålet om Handelskompagniets skatteforpligtelser i forbindelse med ruten, svarer Henriksen undvigende og understreger, at kompagniet opererer “inden for rammerne af gældende handelsaftaler”.
+
+\begin{pullquote}
+"Vi betaler det, vi er forpligtet til at betale. Ikke mere, ikke mindre. Hvis Imperiet ønsker flere midler, må de tilbyde bedre vilkår. Handel belønner effektivitet, ikke loyalitet."
+\\
+\textit{– Yagurt Henriksen}
+\end{pullquote}
+
+Flere uafhængige økonomer peger på, at ruten i praksis kun vil være rentabel for de største aktører, mens tabene vil blive båret af kontraktarbejdere og lokale.
+
+Handelskompagniet afviser denne kritik og fastholder, at ruten er frivillig, nødvendig og uundgåelig.
+
+Om Leltho bliver fremtidens handelsåre eller endnu et kapitel i regionens lange historie af udnyttelse, vil tiden vise.
+
+
+\subsection*{Nyheder}
+\subsubsection*{Rigsorator Magnus Klangvæld Henrettet}
+Risorator Magnus Klangvæld og hans hustru blev i går ved daggry henrettet efter en lukket proces ved den Imperielle Domstol. Ifølge den officielle erklæring blev dommen afsagt for “illoyal tale, æreskrænkelse af en allieret monark samt destabiliserende retorik rettet mod Imperiets interesser”.
+
+Henrettelsen markerer et brat og bemærkelsesværdigt opgør med den tidligere Rigsorators offentlige udtalelser om A’kastin og dets konge, Dorian Vinterkrone. Særligt bemærkes det nu, at Kong Dorian er grandnevø til Hertuginde Vinterkrone, der står som nummer 21 i arvefølgen til den Imperielle Trone.
+
+Imperiet har siden domfældelsen været hurtige til at distancere sig fra Klangvælds tidligere udtalelser.
+
+\begin{pullquote}
+"Rigsorator Klangvælds ord repræsenterede ikke Imperiets samlede holdning, men et personligt og beklageligt fejlskøn. Imperiet værdsætter stabilitet, respekt for legitime herskere og ansvarlig tale. Særligt i tider hvor verden allerede er truet af mørke kræfter."
+\\
+\textit{– Officiel erklæring fra Det Imperielle Kanselli}
+\end{pullquote}
+
+Ifølge kilder tæt på processen blev sagen behandlet med ekstraordinær hast, og både Magnus Klangvæld og hans hustru blev fundet skyldige i at have “svækket Imperiets diplomatiske position” gennem gentagne offentlige udtalelser.
+
+\begin{pullquote}
+"Dette handlede ikke om, hvad han sagde dengang, men om hvem han sagde det om."
+\\
+\textit{– Anonym imperiel jurist}
+\end{pullquote}
+
+Inkvisitionen, som tidligere blev fremhævet af Klangvæld som Imperiets stærkeste værn, har ikke kommenteret direkte på henrettelsen. Dog bekræfter de, at dokumentation relateret til sagen er blevet arkiveret under klassificerede protokoller.
+
+\begin{pullquote}
+"Ingen står over loven. Ikke dæmoner. Ikke konger. Og ikke stemmer, der taler, før de tænker."
+\\
+\textit{– Talsmand for Inkvisitionen}
+\end{pullquote}
+
+Blandt befolkningen har nyheden vakt uro. Flere borgere udtrykker bekymring for, hvor grænsen går mellem loyalitet og sandhed, når politiske forbindelser ændrer sig hurtigere end officielle udmeldinger.
+
+Imperiet fastholder, at relationen til A’kastin forbliver uændret og understreger, at Kong Dorian Vinterkrone anerkendes som legitim og ærefuld hersker.
+
+Hvorvidt denne anerkendelse også ville have stået ved magt uden blodsbåndet til tronen, er der ingen officielle kommentarer til.
+
+\subsubsection*{Inkvisitionen Udvider Nattelige Kontroller}
+
+Inkvisitionen har bekræftet, at der i de kommende uger vil blive gennemført øget patruljering i byområder nær Sydporten. Tiltaget beskrives som \textit{forebyggende} og har ifølge talsmænd ingen relation til aktuelle efterforskninger.
+
+Borgere opfordres til at bære gyldig identifikation efter solnedgang.
+
+
+\subsubsection*{Dagens Ord}
+\begin{pullquote}
+\textit{“Lyset viser ikke vejen. Det viser blot, hvor du står.”}\\
+– Vers 38 af Kelllwans bog
+\end{pullquote}
+
+\subsection{Læserbrev}
+
+Det er en trist tid, hvor vi ser at dæmoner ikke kun indtager vore jorde, men at de også rykker på det som skulle være selveste grundstenen, i de største religiøse kredse.
+
+I disse kolde måneder, kommer inkvisitionen til selv de mindste byer, for at oprette ro og orden. Og det skulle jo være så godt, men det er med stor sorg i hjertet, at jeg må konstatere, at de som skulle foregive at være de største inkvisitorer af selveste Kelllwans tro, ikke blot udnytter unge mennesker som slaver, kun fordi de er deres fanger. De tvinger dette unge menneske til, at bruge magi på Hans kongelige højhed, Kong Dorian Vinterkrone, Konge af A’kastin, Fyrsteblodets Evige Flamme, Sværdfører af Den Gyldne Hæder og Den Sande Krone i Mørkets Tidsalder, for at sikre sig at han taler i sandheder.
+
+Magi? Siden hvornår er det blevet skik og brug for en Kelllwans religiøse tjener, at holde en magisk slavinde, blot for at udsætte de royale for æreløse beskyldninger?
+
+Jeg siger ikke at magi ikke har sin plads i denne verden, og nogle magere kan endda være en del af Kelllwans sande troende. Men at en præstinde og inkvisitionen af Kelllwan går rundt og leger kispus med Kongen, via et pigebarn de selv har dømt for hekseri (og som eftersigende skulle have brændt en landsby ned), ved at lade hende håndspålægge, ja Ewen må vide hvilken type af magi, på hvor ærede Kong Dorian Vinterkrone (måtte han leve et langt og frugtbart liv, i Kelllwans alt årvågne åsyn), det vil jeg kalde uhæderligt, ja endda stygt.
+
+Og da jeg, Halborg Ragnhild Borgesdatter af Halvig, den af det Kelllwanske Akademi i Sydlands udnævnte præstinde af Kelllwan i Marcusstadt i A’kastin, insisterede på at denne præstinde selv lod sig indflyde af sandhedens tunge, dog denne gang via alkymistiske drikke, der som bekendt ikke er magiske, tillod Inkvisitionen sig at lade sig fornærme af dette uskyldige modsvar, på trods af at vor gavmilde Konge (han, hvis hjerte banker for sit folks ve og vel), villigt lod sig overbevise om at blive indhyllet i deres fanges ukendte magiske formåen, blot for at tilfredsstille Inkvisitionens uretmæssige krav, givet til ham, i hans eget land, og by.
+
+Hvis dæmonerne som netop nu er sluppet løs i denne verden, en handling som vi, netop nu, er i færd med at granske til fulde, for at finde kilden, kan være årsag til at selv Inkvisitionen vender sig mod sine egne principper, så må det betyde at man er ved at være desperat, hvis man kan finde på at vende sig fra sin egen ære.
+
+Kelllwan være med os, i vore veje fremadrettet, når vi skal bekæmpe disse dæmoniske udskud.
+
+\subsection*{Bekendtgørelser}
+
+Familien meddeler med sorg, at
+\textit{Henrik Volstad}, havnearbejder,
+er bortgået efter kortvarig sygdom.
+
+Begravelse finder sted uden offentlig adgang.
+
+
+\subsection*{Reklamer}
+
+\subsubsection*{Bliv rig uden at arbejde!}
+
+Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger! \\[0.5em]
+
+Tjen op til \textbf{500 Fjend per dag}! \\[0.5em]
+
+Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i. \\[0.5em]
+
+Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni! \\[1em]
+
+\textit{Sådan fungerer det:}
+\begin{itemize}
+  \item Du samler 3 kongetander.
+  \item Du finder 3 venner, der arbejder under dig.
+  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
+  \item Når de finder 3 venner hver, får du hele 36 kongetand!
+\end{itemize}
+
+Med vores atraktive handelsrate tilbyder vi \textbf{5 HKG}\footnote{Handelskompagni Guld} per kongetand. \\[0.5em]
+
+Beviser du dit værd, bliver du udpeget til at være den officielle \textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.} \\[1em]
+
+\textbf{Kontakt din lokale repræsentant for Handelskompagniet i dag!}
+
+\separator
+\begin{tcolorbox}
+\textbf{Hvad er Kongetand?}
+
+Kongetand er en mineraliseret planteknold, der kun findes i jord
+forurenet af arakaniske strømninger. Stoffet anvendes i alkymi, magiske
+kontrakter og som katalysator i visse imperiale ritualer.
+
+Indsamling frarådes uden beskyttelse.
+\end{tcolorbox}
+% ====== Back matter (optional) ======
+\section*{Kontakt}
+Redaktionen, 1864 Salezstad
+
+Ønsker du en artikel i Den Rullende Sten er det altid muligt at betale 15 Fjend for en 1 sides artikel.
+
+\end{document}

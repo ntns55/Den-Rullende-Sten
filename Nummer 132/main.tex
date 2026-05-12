@@ -1,0 +1,399 @@
+
+\documentclass[letterpaper,12pt]{memoir}
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+\usepackage{float}
+
+
+
+\usepackage[pdftex]{graphicx}
+%block size info
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+\usepackage[print,1to1]{booklet} %print option switches to landscape
+\pagespersignature{16}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
+  {\end{tcolorbox}}
+
+
+\usepackage{xparse}
+\usepackage{wrapfig}
+
+% Justérbare standarder for sidebar i spalter
+\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+\setcounter{sidebarlines}{14}
+\setlength{\sidebarwidth}{0.42\columnwidth}
+
+
+% ====== Utilities ======
+\newcommand{\separator}{%
+  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.75\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries
+        \resizebox{1\textwidth}{!}{#3}%
+      }}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+
+ 
+
+\begin{document}
+\pdfpageheight=\paperwidth
+\pdfpagewidth=\paperheight
+\paperwidth=\pdfpagewidth
+\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 132}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{DæmonAngreb.png}
+{A'kastin er reddet!}
+{KELLWAN KIRKEN SEJRE!}
+{Endnu en sejer}
+{}
+
+\vspace{.75\baselineskip}
+
+
+% ====== Lead story (Front page) ======
+\par\medskip
+\headline{Kelllwan Kirken bygger Sydporten}
+\par\medskip
+\deck{A'kastin i evig gæld til Kelllwan Kirken}
+\par\medskip
+\byline{Redaktionen}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{D}{et} har længe været en kilde til både bekymring og debat: forbindelsen mellem A'kastin og det ødelagte land Letho. Nu melder Kelllwan Kirken sig på banen med et klart budskab. Arbejdet med Sydporten er endelig i gang.
+
+\par\medskip
+
+Efter flere mislykkede forsøg fra lokale kræfter i A'kastin på at sikre grænsen, har Kelllwan Kirken under ledelse af Sølvhammeren Orden påbegyndt en rekonstruktion af den længe omtalte port. Kirken beskriver selv indsatsen som både nødvendig og rettidig, og flere af deres repræsentanter fremhæver, at projektet allerede viser tegn på “struktur og disciplin, som tidligere har manglet.”
+
+\par\medskip
+
+Ifølge kirken er det særligt Sølvhammerens Orden, der har været afgørende for, at arbejdet overhovedet kunne begynde. Deres tilstedeværelse i A'kastin er blevet præsenteret som et vendepunkt, hvor tidligere kaotiske forsøg nu erstattes af en mere organiseret indsats.
+
+\par\medskip
+
+Flere talspersoner fra Kelllwan Kirken har udtalt, at hjælpen fra Dorian Vinterkrone også har været værdsat. De peger på, at A'kastin i årevis har stået over for trusler fra Letho uden at formå at etablere en holdbar løsning, og det var Dorian Vinterkrone som lod Sølvhammerens Orden gøre de nødvendige handlinger. Med rekonstruktionen af Sydporten mener kirken, at en sådan løsning nu er inden for rækkevidde.
+
+\begin{pullquote}
+“Det er ikke nok at erkende problemet. Man må også have evnen til at handle på det. At direktøren for Handelskompagniet kommer og tager æren virker dog som klassisk grådighed, da Handelskompagniet nægtede en fælles løsning, og alt betaling kom direkte fra direktørens egen lomme.”
+- Biskop Edward Valmund 
+\end{pullquote}
+
+\par\medskip
+
+Kelllwan kirken fremhævede især den manglende hjælp fra andre kirker og organisationer, her blev især fremhævet at Morwen Kirken, Ewen Kirken, Esselaia Kirken og Handelskompagniet ikke bidrog til at redde riget i midten.
+
+\section*{Nyheder}
+
+\subsection*{STARTEN PÅ EN NY DÆMONKRIG AFHVERET}
+\textit{- Aslaug Sølvgaard}\\
+Efter måneder præget af frygt for de dæmoniske skabninger på flugt fra Letho, virker det nu til at Kalish har undgået det, mange frygtede kunne blive begyndelsen på en ny dæmonkrig.
+
+\par\medskip
+Den ødelagte sydport har i månedsvis stået som et åbent sår mod syd, og truet både handelsruter og befolkningen i Kalish. 
+
+\par\medskip
+Men i et historisk og hidtil uset samarbejde, mellem Handelskompagniets ejer, Aslaug Sølvgaard og Kelllwan Kirken med deres repræsentanter Sølvhammeren, er genopbygningsarbejdet af sydporten nu sikret. 
+
+\par\medskip
+Genopbygningen blev stadfæstet ved ceremoni i ruinerne af det tidligere forsvarsværk, hvor Kelllwan Kirken og Aslaug Sølvgaard på glorværdigvis i et stærk rirtuelt samarbejde forviste dæmonerne til Letho, hvilket tillod Kelllwan Kirken at igangsætte arbejdet med porten og mod at skabe et sikkert Kalish og ikke mindst A'kastin.
+
+\section*{Politik}
+\subsection*{Opfølgning: Omdøb Marcusstad til Dorianborg}
+\textit{- Philip Kik}\\
+
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    ymin=0,
+    ymax=100,
+    bar width=13pt,
+    symbolic x coords={Ork,Goblin,Sydland,Nordland,Permersland,Dværge,Sortelvere},
+    xtick=data,
+    x tick label style={rotate=45, anchor=east},
+    ytick={0,20,40,60,80,100},
+    yticklabel style={
+        /pgf/number format/1000 sep=
+    },
+    ylabel={Procent},
+    enlargelimits=0.15,
+    width=12cm,
+    height=10cm,
+    legend style={
+        at={(0.5,-0.3)},
+        anchor=north
+    },
+]
+\addplot coordinates {
+    (Ork,50)
+    (Goblin,82)
+    (Sydland,74.2)
+    (Nordland,100)
+    (Permersland,21.3)
+    (Dværge,49.4)
+    (Sortelvere,3.1)
+};
+\addplot coordinates {
+    (Ork,2)
+    (Goblin,18)
+    (Sydland,4)
+    (Nordland,0.1)
+    (Permersland,51.6)
+    (Dværge,20.7)
+    (Sortelvere,92.9)
+};
+\legend{For Navne Ændring, Imod Navne Ændring}
+\end{axis}
+\end{tikzpicture}
+\par\medskip
+
+Mange af vores læsere protesterede mod navneskiftet på den ikoniske by. Vi har dog lavet en meningsmåling for at finde ud af hvad den almindelige borger af Imperiet mener.
+
+\par\medskip
+
+Det er tydeligt at de gode og lovlydige borgere mener at denne navneændring er en positiv forandring, mens Sortelvere og rebellerne fra Permersland er imod dette. Selv en ork kan se at denne navneændring ville være noget positivt, så jeg spørger: 
+\par\medskip
+
+\begin{center}
+  \Large ER DU DUMMERE END EN ORK?
+\end{center}
+
+\newpage
+\section*{Reklamer}
+\subsection*{BRING JERN! OG KRUDT!}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{PIFPAF.png}
+\end{figure}
+VI BRUG FOR KRUDT OG JERN TIL SPRINGE EVLER OP! DU BRING OS 5 JERN OG 5 KRUDT OG VI GIVE DIG SPECIEL PREMIE! DET VÆRE BOMBE I BREV! 
+- PIF OG PAF!
+
+\begin{center}
+\fbox{
+\begin{minipage}{0.9\linewidth}
+
+\begin{center}
+{\Large \textbf{KELLLWAN KIRKEN KALDER}}\
+\medskip
+{\large \textit{Sydporten skal genopbygges}}
+\end{center}
+
+\par\medskip
+
+Efter år med fejlslagne forsøg er arbejdet ved Sydporten nu begyndt under Kelllwan Kirkens ledelse. Men sten rejser sig ikke alene, og dæmonerne fra Letho venter ikke tålmodigt.
+
+\par\medskip
+
+Kirken søger derfor arbejdere, minefolk, eventyrere og ærlige borgere til indsamling af materialer til rigets forsvar.
+
+\par\medskip
+
+\begin{center}
+\textbf{BETALING UDBETALES DIREKTE AF KELLLWAN KIRKEN}
+\end{center}
+
+\begin{center}
+\Huge
+10 Fjend for Jern\\
+20 Fjend for Mitril
+\end{center}
+
+\par\medskip
+
+Materialer afleveres ved Kelllwan Kirkens lejre nær Sydporten.
+
+\par\medskip
+
+Kun gennem handling sikres Kalish mod Lethos rædsler.
+
+
+\end{minipage}
+}
+\end{center}
+
+\subsection*{Bliv rig uden at arbejde!}
+
+Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger! \\[0.5em]
+
+Tjen op til \textbf{500 Fjend per dag}! \\[0.5em]
+
+Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i. \\[0.5em]
+
+Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni! \\[1em]
+
+\textit{Sådan fungerer det:}
+\begin{itemize}
+  \item Du samler 3 kongetander.
+  \item Du finder 3 venner, der arbejder under dig.
+  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
+  \item Når de finder 3 venner hver, får du hele 36 kongetand!
+\end{itemize}
+
+Med vores atraktive handelsrate tilbyder vi \textbf{5 HKG}\footnote{Handelskompagni Guld} per kongetand. \\[0.5em]
+
+Beviser du dit værd, bliver du udpeget til at være den officielle \textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.} \\[1em]
+
+\textbf{Kontakt din lokale repræsentant for Handelskompagniet i dag!}
+
+\separator
+% ====== Back matter (optional) ======
+\section*{Kontakt}
+Redaktionen, 1864 Salezstad
+
+Ønsker du en artikel i Den Rullende Sten er det altid muligt at betale 15 Fjend for en 1 sides artikel.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{vinterkroneSkjold.png}
+\end{figure}
+Vi takker Familien Vinterkrone for deres støtte til Avisen.
+\end{document}

@@ -1,0 +1,264 @@
+%\usepackage{geometry}
+
+%\usepackage{graphicx}
+%\usepackage{color,framed}
+%\usepackage[print,1to1]{booklet} %print option switches to landscape
+%\pagespersignature{16}
+%\setpdftargetpages
+\documentclass[letterpaper,12pt]{memoir}
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+
+\usepackage[pdftex]{graphicx}
+%block size info
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+\usepackage[print,1to1]{booklet} %print option switches to landscape
+\pagespersignature{16}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}\itshape\large}
+  {\end{tcolorbox}}
+
+
+% ====== Utilities ======
+\newcommand{\separator}{\par\noindent\color{black!40}\rule{\textwidth}{0.4pt}\par}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.75\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries\fontsize{30}{32}\selectfont #3}}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+
+
+
+\begin{document}
+\pdfpageheight=\paperwidth
+\pdfpagewidth=\paperheight
+\paperwidth=\pdfpagewidth
+\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 125}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{Elves.png}
+{EKSKLUSIVT}
+{Konflikt i Mek!}
+{Dæmonerne står for døren?}
+{}
+
+\vspace{.75\baselineskip}
+
+
+% ====== Lead story (Front page) ======
+\par\medskip
+\headline{Konflikt i Mek!}
+\par\medskip
+\deck{Efter Sydportens fald: Flere Dæmoner er set i landet Leltho. Mek er nervøse!}
+\par\medskip
+\byline{Husum Voldmosse}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{M}{ek} har over de sidste mange uger oplevet stor tommult i landet. Dette skyldes blandt andet den stigende trusel fra det nærtliggende land Leltho. Vores trofaste læsere vil udentvivl huske at Leltho er landet hvor den ærede Kejser Erik Fjendebane mistede sit lav sammen med hans søn, Tobias Fjendebane. Efter deres bortgang ved Sydporten (Porten mellem A'kastin og Leltho) blev denne barriere ødelagt, og rapporter om stigende dæmon aktivitet er set.
+
+\begin{pullquote}
+“Vi har set dæmoner der bærer røde markeringer som minder om dem fra Dæmonkrigen”\\
+\textit{- Udtaler Stormester Villiam}
+\end{pullquote}
+
+Imperiet har ikke valgt at sende tropper til Mek endnu. Men har på det stærkeste opfordret til at A'kastins ledelse genopbygger porten. 
+
+\subsection*{Nyheder}
+\subsubsection*{En drage unge er født i fangeskab.}
+Den første drage i fangeskab er blevet født. En lokal Livsdruide for den royale zoo har bekræftet at den royale drage's æg er befrugtet. Dette markere den første drage født i fangeskab. Det er ukendt hvilke planer der er for at klække ægget.
+
+\subsubsection*{Nye runer opdaget i Livets Ende}
+%\begin{wrapfigure}{r}{0.52\columnwidth}
+%  \vspace{-6pt}
+%  \includegraphics[width=0.52\columnwidth]{example-image-a}
+%  \caption*{\sffamily\small Billede at de nye runer}
+%  \vspace{-6pt}
+%\end{wrapfigure}
+Glæden er stor blandt dværgene i Livets Ende, hvor lærde smede netop har offentliggjort opdagelsen af en række ukendte runer dybt i de ældste miner. Ifølge de første rapporter menes runerne at stamme fra en tid før selv Orlek rejste sine første krigere, og deres effekter er endnu ukendt, men det menes at have noget med modsætninger. Handelskompagniet har straks sendt delegationer for at støtte forskningen og sikre, at Imperiets borgere får del i de nye muligheder. 
+
+\begin{pullquote}
+“Dette markerer begyndelsen på en ny æra for dværgenes håndværk,”\\
+\textit{-Udtaler Than Ülwrick Krezz}
+\end{pullquote}
+
+\subsection*{Debat: Handelskompagniets kyniske spil}
+\byline{Kirsten Giftkniv}\\
+Atter engang viser Handelskompagniet sit sande ansigt. Bag gyldne facader og store ord om udvikling og velstand gemmer sig en kynisme, der burde vække vrede hos enhver borger i Kalish. Der tales om investeringer i Sydporten og handelsruter mod syd, men i virkeligheden er det Leltho og A’kastin, der må betale prisen. Kompagniet ser folk og lande som brikker, der kan flyttes, købes og knuses.\\
+Når interne læk peger på forbindelser til sortelvernes huse og dæmonologisk infiltration, vælger ledelsen ikke oprydning, men tavshed. Når oprør bryder ud i Permersland, sender de spioner for at blæse til yderligere krig. Er dette de handlinger, der skaber handel og fred? Eller er det blot grådighedens dæmon, som endnu engang har fundet trofaste tjenere?\\
+Vi må spørge os selv: Skal vi lade en håndfuld købmænd styre skæbnen for hele Sydland og Imperiet?\\
+%\begin{sidebar}[Kalender]
+%\textbf{Torsdag:} Bogcafé kl. 19\\
+%\textbf{Lørdag:} Høstmarked i alléen\\
+%\textbf{Søndag:} Byvandring — “Skjulte passager”
+%\end{sidebar}
+
+\newpage
+\subsection*{Reklamer}
+\subsubsection*{Er dit hus blevet brændt ned af en drage?}
+Sikkerhedsfirmaet Ravn tilbyder nu sikring mod drage angreb. For kun 64* Fjend om måneden hjælper de med:
+\begin{itemize}
+  \item Slukning af bygninger
+  \item Genopbygning
+  \item Krisehjælp
+  \item Begravelser (Kremering)
+  \item Våben udlån.
+  \item Hjemme inspektions
+  \item Husholdnings blide
+\end{itemize}
+Alt dette og meget mere. Tag kontakt til din nærmeste Ravn repræsentant for mere info.\\
+{\small*for billigste løsning.}
+
+
+
+
+
+\separator
+
+% ====== Back matter (optional) ======
+\section*{Kontakt}
+Redaktionen, 1864 Salezstad
+
+\end{document}

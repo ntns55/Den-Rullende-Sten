@@ -1,0 +1,363 @@
+%\usepackage{geometry}
+
+%\usepackage{graphicx}
+%\usepackage{color,framed}
+%\usepackage[print,1to1]{booklet} %print option switches to landscape
+%\pagespersignature{16}
+%\setpdftargetpages
+\documentclass[letterpaper,12pt]{memoir}
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+\usepackage{float}
+
+\usepackage[pdftex]{graphicx}
+%block size info
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+\settypeblocksize{7.25in}{4.5in}{*}
+\addtolength{\textheight}{\onelineskip}
+\setlrmargins{2.1in}{*}{1}
+\setulmargins{1.75in}{*}{1}
+\checkandfixthelayout
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+\usepackage[print,1to1]{booklet} %print option switches to landscape
+\pagespersignature{16}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
+  {\end{tcolorbox}}
+
+
+\usepackage{xparse}
+\usepackage{wrapfig}
+
+% Justérbare standarder for sidebar i spalter
+\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+\setcounter{sidebarlines}{14}
+\setlength{\sidebarwidth}{0.42\columnwidth}
+
+
+% ====== Utilities ======
+\newcommand{\separator}{%
+  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.75\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries
+        \resizebox{1\textwidth}{!}{#3}%
+      }}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+
+ 
+
+\begin{document}
+\pdfpageheight=\paperwidth
+\pdfpagewidth=\paperheight
+\paperwidth=\pdfpagewidth
+\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 130}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{Skriveren.png}
+{Skriveren set I A'kastin}
+{Usikkerhed stiger!}
+{Sidst døde en gud!}
+{}
+
+\vspace{.75\baselineskip}
+
+
+% ====== Lead story (Front page) ======
+\par\medskip
+\headline{Hvem betaler for alt dette?}
+\par\medskip
+\deck{Genopbygning af Sydporten}
+\par\medskip
+\byline{Michael Wulff}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{S}{om} vores trofaste læsere ved, så bragte vi sidste måned den sande historie om hvordan Sydporten faldte og Kejser Erik Fjendebane II blev dræbt ved porten.
+
+Ikke destor mindre, har vi nu en ny historie, om hvordan fire faktioner kæmper om at genopbygge denne port.
+
+Vi har fremskaffet de fire tilbud her.
+\begin{pullquote}
+Til det ærede folk af A’kastin,\\
+Selv om jeres uafhængighed er stadfæstet med Imperiets segl, kan ingen benægte, at der fortsat består bånd mellem os. Bånd vævet af handel, kultur og gensidig beskyttelse. Disse forbindelser har gennem generationer sikret stabilitet og velstand for os alle.\\
+Derfor er det mig en fornøjelse at række Imperiets hånd frem i samarbejde.\\
+Sydporten var engang et bolværk mod Leltho, et symbol på fælles styrke og Imperiets generøsitet, men ligger nu i ruiner. Dens genopbygning og bemanding er en opgave af betydeligt omfang, men også af stor strategisk og historisk vigtighed.
+I god vilje og med ønsket om varig stabilitet i regionen tilbyder jeg, at Imperiet påtager sig ansvaret for at genopbygge Sydporten samt sikre dens faste bemanding. Imperiets ingeniørkorps og garnison vil igen gøre porten til et værn mod de trusler, der engang blev holdt stangen dér.\\
+Et sådant engagement forudsætter naturligvis et bidrag til de omkostninger, der følger med mobilisering, konstruktion og vedvarende bevogtning. Et beskedent, rimeligt og retfærdigt skattesystem vil kunne lette denne byrde og sikre projektets langsigtede bæredygtighed. Samtidig vil det stå som et synligt tegn på A’kastins fortsatte respekt for de strukturer, der engang beskyttede landet mod Lelthos dæmoner.\\
+Tag dette som et tilbud.\\
+ Ikke en påmindelse om fortiden, men en mulighed for fremtidig storhed.\\
+For selvstændighed betyder ikke isolation, og ingen port står længe uden stærke hænder til at vogte den.\\
+Jeg ser frem til jeres svar.\\
+Med nåde og værdighed,\\
+ Kejserinden Aurelia Fjendebane den Første\\
+ \\[3\baselineskip]
+[Offgame info] Dette vil betyde, at imperiet overtager projektet. De kommer til at opkræve en konstruktions skat i starten (Vil blive gjort ved Check-ind) og en kvartalskat “Januar” “April” “Juli” “November”. Dette er op til en forhandling. Sikkerheden er god og dæmoner bliver en del mere sjældne.\\
+\end{pullquote}
+
+Vores analytikere har set at dette bestemt kan være en fin løsning på A'kastins problemer. I det mindste vil de vide hvad deres skattepenge går til, hvor imod os andre må finde alternative løsninger.
+
+\begin{pullquote}
+Fra Handelskompagniet\\
+Til det Akastinske folk\\
+I mange år har vi handlet sammen. Lige så længe har dette samarbejde rummet både fordele og omkostninger. Selv de tragiske hændelser, hvor vore betroede Vincents mistede livet som følge af mangelfuld diskretion, har ikke svækket vores vurdering: samarbejdet er fortsat værdifuldt.\\
+Sydportens fald har ændret magtbalancen og skabt nye muligheder. Især med vores nye handelsrute, som har gjort det muligt at vi kan give jer et unikt tilbud.\\
+Handelskompagniet ser med stor interesse på investeringer i Sydporten. Denne nøgleposition må sikres, kontrolleres og udnyttes fuldt ud, hvis stabil handel og varig velstand skal genoprettes. Vores agenter er allerede i gang med de nødvendige forberedelser, og alle medlemmer opfordres til at bidrage med kapital, ressourcer og politisk indflydelse for at sikre projektets gennemførelse.\\
+Vi antager, at det Akastinske folk deler vores interesse i sikker handel og rimelige priser. Et samarbejde vil ikke blot neutralisere den fortsatte trussel fra Leltho, men også genetablere handelsruter, der skaber velstand for alle parter.\\
+Handel følger sikkerhed.\\
+Velstand følger handel.\\
+Vi ser frem til jeres støtte og samarbejde.\\
+For Handelskompagniet\\
+ Aslaug Sølvgaard\\
+ Direktør\\\\[3\baselineskip]
+[Offgame info] Dette vil betyde, at i skal samlet indsamle før sommer: \\
+500 fjend \\
+30 Jern \\
+20 Mithril \\
+10 Runer \\
+Dette vil resulterer i at sikkerheden er fornuftig, dæmoner bliver mere sjældne samt at handel får en rabat i 6 måneder fra gennemførelsen  
+\end{pullquote}
+
+Utrolig generøst tilbud af handels kompagniet, som uden tvivl vil give god sammenslutning fremadrettet. Nogen mener at dette dog vil sætte handelskompagniet i en utrolig magtfuld position, især når man tager i betragning at den tidligere konge af A'kastin også være direktør for handelskompagniet.
+
+\begin{pullquote}
+A'kastin selv \\
+I kan også vælge at løse situationen selv, ved at genopbygge porten. \\
+Dette vil kræve at i samlet indsamler før sommer: \\
+4000 fjend \\
+100 Jern \\
+80 Mithril \\
+40 Runer \\\\[3\baselineskip]
+[Offgame info] Hvis porten laves så vil dette medføre: Dæmonerne vil ikke kunne krydse ind i A'kastin på kortet. Ydermere, hvis I selv laver porten, vil alle få dobbelt XP indtil sommerscenariet. Hvis porten ikke er bygget på den ene eller anden måde før sommerscenariet, kan det have stor betydning for truslen A´kastin vil stå over for.  
+\end{pullquote}
+
+Der er stor tvivl om dette overhovedet kan lykkes for A'kastin. Vores økonomer mener bestemt ikke at de har den nødvendige kapital til at skrabe dette sammen.
+
+\begin{pullquote}
+  Ærede E'trit\\
+  Jeg har set hvordan i kæmper for den magt som vi har ladet jer beholde.\\
+  Det er smukt at i tænker at det blod som i giver for at overleve er jorden værdig.\\
+  Jeg har fundet et andet mål. Et mål som vil vise jer at blodet som vander træernes røder kan blive brugt bedre.\\
+  Ishtar's Døtre er villige til at genopbygge porten til Leltho.\\
+  Til gengæld vil vi tage det blod som ville være gået tabt. Er det ikke bedre at det går til en potentiel allieret end til Dæmonerne?\\
+  -Valsharess Nerum af Hvid Hus.\\\\[3\baselineskip]
+  [Offgame info] Hvis denne løsning vælges vil det ikke koste nogen ressourcer, men hver spilgang i 6 måneder vil en tilfældig ikke-sortelver spiller blive uplottet og miste deres karakter permanent.
+\end{pullquote}
+
+Man kan ikke lade være med at tænke at dette vil være en dårligere beslutning end at lade porten være åben. Vi har et ordsprog her i Sydland, som lyder: "Dæmoner eller Sortelver" dette referer til en beslutning hvor alle muligheder er dårlige. I dette tilfælde virker det til at det bogstaveligt talt er hvad A'kastin står og kan vælge imellem... dæmoner eller sortelvere.
+
+\section*{Nyheder}
+\subsection*{Den Røde Trone bliver poleret!}
+\textit{- Gert Günther Gammelgaard}\\
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{Tronen.png}
+\end{figure}
+
+Hver vintermåned, når kulden lægger sig over Nordland og sneen dækker gaderne i Salezstand, sker der noget ganske særligt inde i kejserpaladsets store hal. Her står Imperiets mest kendte symbol: Den Røde Trone. I disse dage bliver den igen pudset, poleret og gjort klar til et nyt år i rigets tjeneste.
+
+For mange borgere er det blot en tradition. For andre er det et øjeblik til eftertanke.
+
+Den Røde Trone er for mange selve symbolet på Imperiets orden og kejserindens ret til at herske over de mange lande i Kalish. Den repræsenterer idéen om, at civilisation og lov står over kaos, og at riget må holdes samlet gennem styrke og disciplin. 
+
+Traditionen med at polere tronen går helt tilbage til Imperiets tidligste år. Ifølge historikere blev tronen rejst under den første kejser, Michael Fjendebane, som et symbol på den nye orden han ønskede at skabe for menneskene i Nordland. Den røde farve siges at repræsentere det blod, der måtte betales for menneskets fælles overlevelse. 
+
+En lille gruppe udvalgte tjenere og håndværkere får hvert år æren af at udføre arbejdet. Med fine klude, olier og særlige børster arbejder de i flere dage for at bringe træets dybe røde glød frem igen. Selv de mindste ridser fjernes omhyggeligt.
+
+\section*{Religion}
+\subsection*{Videnskabeligt Udrag}
+Professor Arns LaFour fra Kelllwans Akademi skriver følgende i - Er Ishtar en gud og hvad siger reglerne?
+
+Fra vores forståelse og forskning af guderne og de regler de eksistere efter, noteres det, at alle guder engang har været levende. Jeg ønsker imidlertid at reflektere over betydningen af dette udsagn. Begrebet “levende” kan fortolkes på flere måder. Skal det forstås således, at en guddom har måttet være fysisk levende på selve Kalish, have vandret og været født på den materielle jord? Eller bør udsagnet snarere forstås i en overført betydning, der omfatter eksistens på både det materielle plan og de ikke-materielle planer, hvor de ikke-materielle planer henviser til de forskellige sfærer, der eksisterer omkring Kalish?
+
+Baggrunden for denne problemstilling knytter sig særligt til Ishtar, idet hun ikke er et væsen, der er født på Kalish. Hun er derimod datter af Misrush og Daikia og må således antages at være skabt og født i Daikias guddommelige sfære. Hvis udsagnet i teksten skal forstås som en absolut regel, og hvis det indebærer, at en guddom må være født på det materielle Kalish for at kunne betegnes som levende, rejser det spørgsmålet, om Daikia på et tidspunkt har opholdt sig på Kalish, hvor hun også har født sin datter, før hun forlod verden igen.
+
+Ydermere fremgår det af den tredje lov for guderne, at guderne ikke er i stand til at betræde det dødelige plan. Dette synes at skabe en potentiel intern spænding mellem de nedskrevne guddommelige love, idet de fremstår som indbyrdes modstridende. Særligt opstår denne problematik i relation til gudinden Ishtar, der ifølge traditionen er datter af Misrush og Daikia. Sidstnævnte beskrives både som en guddom og som en skabende energi, hvilket yderligere komplicerer forståelsen af, hvordan en guddom kan være blevet til gennem fødsel, samtidig med at de gældende love synes at udelukke guddommelig tilstedeværelse på det dødelige plan. Denne tilsyneladende modsætning mellem kosmologisk ontologi og juridisk-teologisk forskrift giver anledning til en mere dybtgående analyse af lovenes indbyrdes sammenhæng.
+
+Ovenstående perspektiver fremstår som interessante tolkningsmuligheder, idet de potentielt kan have betydelige implikationer for forståelsen af de levende folks relation til og opfattelse af verdenen på Kalishs jord.  Det kan jo også tilføjes sprøgsmålet om hvorvidt Ishtar egentlig er en gud.
+
+
+
+\section*{Reklamer}
+\subsection*{BRING JERN! OG KRUDT!}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{PIFPAF.png}
+\end{figure}
+VI BRUG FOR KRUDT OG SVOVL TIL SPRINGE ELVER OP! DU BRING OS 5 JERN OG 5 KRUDT OG VI GIVE DIG SPECIEL PREMIE! DET VÆRE BOMBE I BREV! 
+- PIF OG PAF!
+\subsection*{Bliv rig uden at arbejde!}
+
+Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger! \\[0.5em]
+
+Tjen op til \textbf{500 Fjend per dag}! \\[0.5em]
+
+Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i. \\[0.5em]
+
+Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni! \\[1em]
+
+\textit{Sådan fungerer det:}
+\begin{itemize}
+  \item Du samler 3 kongetander.
+  \item Du finder 3 venner, der arbejder under dig.
+  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
+  \item Når de finder 3 venner hver, får du hele 36 kongetand!
+\end{itemize}
+
+Med vores atraktive handelsrate tilbyder vi \textbf{5 HKG}\footnote{Handelskompagni Guld} per kongetand. \\[0.5em]
+
+Beviser du dit værd, bliver du udpeget til at være den officielle \textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.} \\[1em]
+
+\textbf{Kontakt din lokale repræsentant for Handelskompagniet i dag!}
+
+\separator
+% ====== Back matter (optional) ======
+\section*{Kontakt}
+Redaktionen, 1864 Salezstad
+
+Ønsker du en artikel i Den Rullende Sten er det altid muligt at betale 15 Fjend for en 1 sides artikel.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{vinterkroneSkjold.png}
+\end{figure}
+Vi takker Familien Vinterkrone for deres støtte til Avisen.
+\end{document}
