@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1779435663.09269 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1779435675.34997 0
+["pdflatex"] 1779439781.51975 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1779439793.52766 0
   "C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1773907934 165035 80bb95a7c2f9ede74bee0121979afd66 ""
   "C:/Users/NTNS/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1757330304 13147728 dcf0c0a0176764b7ff9e3d17bed5abab ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
@@ -250,8 +250,8 @@
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/xstring/xstring.sty" 1693735632 123 a302f2c651a95033260db60e51527ae8 ""
   "CarmenorLogo.jpg" 1778494184 22842 5079a0065a048fbf08db7499cae34c23 ""
   "Daikia.png" 1778495061 802940 8ad54dff0d10380863a948f11d11048a ""
-  "DæmonAngreb.png" 1777897569 4829043 ab53958ee348c9b1a1715f6da417a49d ""
   "Esselaia Symbol full.png" 1778494586 185737 d374396b4801dc8b73bec514de5bc1a0 ""
+  "Esselaia.png" 1779437639 46144294 016e9c9351cf48c9bf1dd9352026760d ""
   "Ewen.jpg" 1778494463 81703 2514a2b47b71e3b81a7ebc8f8056f893 ""
   "Ishtar.png" 1778494490 28303 29d3d6af8f38f4aa1932e2310fd30941 ""
   "KelllwanSymbol.png" 1771227385 73327 0b8dc83487b88e7db341214871df0009 ""
@@ -262,10 +262,10 @@
   "RaffaelSymbol.png" 1770622085 250085 84ea5d0025e65968701ac83bf7a22bf0 ""
   "Tronen.png" 1775546157 217832 853eb45d438d1d68930316b6ca5c4040 ""
   "alman.jpg" 1778494071 7302 739b4d310428eb6462248241558fa6c2 ""
-  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1779435659 24277 ffa4e74a76191aea5855f2b159ed70d4 ""
+  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1779439780 24104 cd49eac30b60bc8804ebeda2ad4f2a73 ""
   "krydsord1-Blank.png" 1778234539 295872 ec1b7b2c1d57f479c3d947d435315e4e ""
-  "main.aux" 1779435674 1537 16195534dac132f860259ef1b1dba1b2 "pdflatex"
-  "main.tex" 1779435659 24277 ffa4e74a76191aea5855f2b159ed70d4 ""
+  "main.aux" 1779439793 1536 b6646b9839f46ee270af2c6ab8017a1b "pdflatex"
+  "main.tex" 1779439780 24104 cd49eac30b60bc8804ebeda2ad4f2a73 ""
   "vinterkroneSkjold.png" 1775546157 1384078 416e811754ecea55a7382d6080a7c96c ""
   (generated)
   "main.aux"
