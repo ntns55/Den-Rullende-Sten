@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1779439781.51975 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1779439793.52766 0
+["pdflatex"] 1779797198.34222 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1779797210.13015 0
   "C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1773907934 165035 80bb95a7c2f9ede74bee0121979afd66 ""
   "C:/Users/NTNS/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1757330304 13147728 dcf0c0a0176764b7ff9e3d17bed5abab ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
@@ -161,6 +161,8 @@
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/base/inputenc.sty" 1738160243 5048 0270515b828149155424600fd2d58ac5 ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/base/shortvrb.sty" 1738160243 4142 53ef7dfa5fd9fc8d039b754c00cd504c ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/base/textcomp.sty" 1738160243 2846 e26604d3d895e65d874c07f30c291f3f ""
+  "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/booklet/bkltprnt.sty" 1252404033 7925 722ad7b80d152caa4f06f615591a21b8 ""
+  "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/booklet/booklet.sty" 1252404033 2213 13b4fda463644d49584d71680f36d294 ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/booktabs/booktabs.sty" 1579093635 6253 f1cb470c9199e7110a27851508ed7a5c ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/caption/caption-memoir.sto" 1696169587 3194 449453a0719ea43e18e51995b7c4696a ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/tex/latex/caption/caption.sty" 1696169587 56128 c2ccf1a29d78c33bc553880402e4fb9a ""
@@ -262,10 +264,10 @@
   "RaffaelSymbol.png" 1770622085 250085 84ea5d0025e65968701ac83bf7a22bf0 ""
   "Tronen.png" 1775546157 217832 853eb45d438d1d68930316b6ca5c4040 ""
   "alman.jpg" 1778494071 7302 739b4d310428eb6462248241558fa6c2 ""
-  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1779439780 24104 cd49eac30b60bc8804ebeda2ad4f2a73 ""
+  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1779797184 30334 afa4c21f5509260b4bd6a341ce61686f ""
   "krydsord1-Blank.png" 1778234539 295872 ec1b7b2c1d57f479c3d947d435315e4e ""
-  "main.aux" 1779439793 1536 b6646b9839f46ee270af2c6ab8017a1b "pdflatex"
-  "main.tex" 1779439780 24104 cd49eac30b60bc8804ebeda2ad4f2a73 ""
+  "main.aux" 1779797209 1821 4f5aafa2ab7cbbba9b4c7afd8c033fce "pdflatex"
+  "main.tex" 1779797184 30334 afa4c21f5509260b4bd6a341ce61686f ""
   "vinterkroneSkjold.png" 1775546157 1384078 416e811754ecea55a7382d6080a7c96c ""
   (generated)
   "main.aux"
