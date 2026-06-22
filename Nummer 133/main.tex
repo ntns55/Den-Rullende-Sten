@@ -129,7 +129,7 @@
 % Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
 \newcommand{\FrontFeatureImage}[5]{%
   % Typeset image at \textwidth just once and measure its height
-  \sbox{\FrontImgBox}{\includegraphics[width=\textwidth]{#1}}%
+  \sbox{\FrontImgBox}{\includegraphics[width=0.94\textwidth]{#1}}%
   % Total height of the scaled image (height + depth)
   \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
   % Max allowed height
@@ -1078,4 +1078,4 @@ HVAD ER DIN UNDSKYLDNING?}
   ]{artikel.pdf}
 \end{center}
 
-\end{document}
+\end{document} 
