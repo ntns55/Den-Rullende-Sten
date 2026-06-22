@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1779797302.90539 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1779797326.83465 0
+["pdflatex"] 1782129316.8583 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" "main.pdf" "main" 1782129321.40236 0
   "C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1773907934 165035 80bb95a7c2f9ede74bee0121979afd66 ""
   "C:/Users/NTNS/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1757330304 13147728 dcf0c0a0176764b7ff9e3d17bed5abab ""
   "C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
@@ -251,8 +251,8 @@
   "CarmenorLogo.jpg" 1778494184 22842 5079a0065a048fbf08db7499cae34c23 ""
   "Daikia.png" 1778495061 802940 8ad54dff0d10380863a948f11d11048a ""
   "Esselaia Symbol full.png" 1778494586 185737 d374396b4801dc8b73bec514de5bc1a0 ""
-  "Esselaia.png" 1779437639 46144294 016e9c9351cf48c9bf1dd9352026760d ""
   "Ewen.jpg" 1778494463 81703 2514a2b47b71e3b81a7ebc8f8056f893 ""
+  "Fælles.png" 1782118313 2425988 48c179e71814e8fc85a3bb465b9a2117 ""
   "Ishtar.png" 1778494490 28303 29d3d6af8f38f4aa1932e2310fd30941 ""
   "KelllwanSymbol.png" 1771227385 73327 0b8dc83487b88e7db341214871df0009 ""
   "Logo.png" 1775546157 260518 bf776b7f56d404202fe8ead6bf553421 ""
@@ -260,13 +260,14 @@
   "OrlekSymbol.jpg" 1778494533 80076 6c728681d3947250af34102ea2ab4eb1 ""
   "PIFPAF.png" 1775546157 23500 ffef7c13794334cfa4f2d98caab6004e ""
   "RaffaelSymbol.png" 1770622085 250085 84ea5d0025e65968701ac83bf7a22bf0 ""
+  "Røvfar.png" 1775546157 63734 f08ee33a6d965e1098350f9cd8086a30 ""
   "Tronen.png" 1775546157 217832 853eb45d438d1d68930316b6ca5c4040 ""
   "alman.jpg" 1778494071 7302 739b4d310428eb6462248241558fa6c2 ""
-  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1779797252 30324 9558804309ebd1865e93a5c4f6f8e2cf ""
+  "artikel.pdf" 1782118676 300490 b73746c53a51dc4fac26dca769802155 ""
+  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 133/main.tex" 1782129316 37046 3dd1eb2d96c684b530caebd930b9fdf3 ""
   "krydsord1-Blank.png" 1778234539 295872 ec1b7b2c1d57f479c3d947d435315e4e ""
-  "main.aux" 1779797325 1536 10029ee8fad2db50f4ac27857ad544ba "pdflatex"
-  "main.tex" 1779797252 30324 9558804309ebd1865e93a5c4f6f8e2cf ""
-  "vinterkroneSkjold.png" 1775546157 1384078 416e811754ecea55a7382d6080a7c96c ""
+  "main.aux" 1782129321 1535 bd9c3cd2e21cdb664a0a7ed9011d68b9 "pdflatex"
+  "main.tex" 1782129316 37046 3dd1eb2d96c684b530caebd930b9fdf3 ""
   (generated)
   "main.aux"
   "main.log"
