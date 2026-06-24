@@ -1,0 +1,1360 @@
+\documentclass[a4paper,12pt]{memoir}
+
+\newsavebox{\FrontImgBox}
+\newlength{\FrontClip}
+
+\usepackage{float}
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+% ====== A4 page layout ======
+\settypeblocksize{*}{150mm}{1.6}
+\setlrmarginsandblock{25mm}{25mm}{*}
+\setulmarginsandblock{25mm}{25mm}{*}
+\checkandfixthelayout
+\usepackage{todonotes}
+\pagestyle{empty} % no page number
+\usepackage[pdftex]{graphicx}
+\usepackage{eso-pic}
+
+ \usepackage{microtype} % better justification & protrusion
+\usepackage{newtxtext} % Times-like body text (newspaper vibe)
+\usepackage[scaled]{helvet} % Sans for headlines and decks
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{decorations.text}
+
+% ====== Columns & visuals ======
+\usepackage{multicol}
+\setlength{\columnsep}{0.28in}
+\setlength{\columnseprule}{0.2pt}
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{lettrine} % drop caps
+\usepackage[many]{tcolorbox} % pull quotes / sidebars
+%\usepackage[print,1to1]{booklet} %print option switches to landscape
+%\pagespersignature{16}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+
+\tcbset{
+  colback=black!2,
+  colframe=black!40,
+  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
+  sharp corners,
+}
+
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+% ====== Headings & bylines ======
+\setsecheadstyle{\Large\bfseries\sffamily}
+\setsubsecheadstyle{\normalsize\bfseries\sffamily}
+\setsubsubsecheadstyle{\normalsize\itshape}
+
+\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
+\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
+\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
+\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
+\usepackage{tikz}
+\usetikzlibrary{fadings,patterns}
+
+% Define a generic "fade to transparent" around a rectangle
+\tikzfading[name=image fade,
+  inner color=transparent!50,
+  outer color=transparent!100]
+
+  % Text outline ("border around letters")
+\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
+\contourlength{0.9pt}         % default stroke thickness
+\contournumber{32}            % smoothness of the outline
+
+% Helpers: white text with dark outline (and a thinner variant)
+\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\owthin}[2][black]{%
+  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+
+% ====== Page banner / folio ======
+\makepagestyle{newspaper}
+\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
+\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
+\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+\makeheadrule{newspaper}{\textwidth}{0.4pt}
+\pagestyle{newspaper}
+
+% ====== Pull quote and sidebar environments ======
+\newenvironment{pullquote}
+  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
+  {\end{tcolorbox}}
+
+
+\usepackage{xparse}
+\usepackage{wrapfig}
+
+% Justérbare standarder for sidebar i spalter
+\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+\setcounter{sidebarlines}{14}
+\setlength{\sidebarwidth}{0.42\columnwidth}
+
+\newcommand{\godentry}[5]{%
+% #1 = placering, #2 = titel, #3 = billedfil, #4 = side l/r, #5 = tekst
+\begin{wrapfigure}{#4}{0.24\columnwidth}
+  \vspace{-8pt}
+  \centering
+  \includegraphics[width=0.20\columnwidth]{#3}
+  \vspace{-12pt}
+\end{wrapfigure}
+
+\subsection*{#1. #2}
+#5
+
+\par\medskip
+}
+
+% ====== Utilities ======
+\newcommand{\separator}{%
+  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+}
+
+
+% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
+% and overlays outlined text (no boxes).
+% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
+\newcommand{\FrontFeatureImage}[5]{%
+  % Typeset image at \textwidth just once and measure its height
+  \sbox{\FrontImgBox}{\includegraphics[width=0.94\textwidth]{#1}}%
+  % Total height of the scaled image (height + depth)
+  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
+  % Max allowed height
+  \dimen2=.8\textheight
+  % Choose visible height: min(actual, max)
+  \ifdim\dimen0>\dimen2
+    \setlength{\FrontClip}{\dimen2}%
+  \else
+    \setlength{\FrontClip}{\dimen0}%
+  \fi
+  %
+  \begin{tikzpicture}
+    % Define a "frame" we’ll use for anchors & clipping
+    \coordinate (TL) at (0,0);                       % top-left
+    \coordinate (TR) at (\textwidth,0);              % top-right
+    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
+    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+
+    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \node[anchor=north west, inner sep=0pt,
+            path fading=image fade, fit fading=false] at (TL)
+        {\usebox{\FrontImgBox}};
+    \end{scope}
+
+    % Dark wash for legibility, also softly faded (match the same clip)
+    \begin{scope}
+      \clip (TL) rectangle (BR);
+      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+    \end{scope}
+
+    % Text stack (bottom-left) — outline style preserved
+    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
+          text width=.75\textwidth] at (BL){%
+      \sffamily
+      % Kicker (optional)
+      \if\relax\detokenize{#2}\relax\else
+        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
+      % Headline
+      {\ow{\bfseries
+        \resizebox{1\textwidth}{!}{#3}%
+      }}\\[0.2em]
+      % Deck
+      {\owthin{\large\itshape #4}}%
+    };
+
+    % Credit (bottom-right), small outline
+    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
+      {\sffamily\small \owthin[black!85]{#5}};
+  \end{tikzpicture}%
+}
+
+
+\newenvironment{infobox}[1]
+{\begin{tcolorbox}[
+  title=\textsf{\bfseries #1},
+  colback=black!3,
+  colframe=black!65,
+  fonttitle=\small,
+  fontupper=\small,
+  boxsep=4pt,
+  left=5pt,
+  right=5pt,
+  top=5pt,
+  bottom=5pt,
+  sharp corners
+]}
+{\end{tcolorbox}}
+
+\newcommand{\paragraf}[1]{%
+  \par\medskip
+  \noindent\textbf{\S#1:}%
+}
+ 
+
+\begin{document}
+%\pdfpageheight=\paperwidth
+%\pdfpagewidth=\paperheight
+%\paperwidth=\pdfpagewidth
+%\paperheight=\pdfpageheight 
+% ====== Nameplate ======
+\begin{figure}
+  \begin{center}
+      \includegraphics[width=0.98\textwidth]{Logo.png}%
+  \end{center}    
+\end{figure}
+\begin{center}
+  {\Large\sffamily Udgave 134}
+\end{center}
+
+
+% Front feature image (keeps aspect ratio, spans \textwidth)
+\FrontFeatureImage{Fælles.png}
+{ESSELAIA OG MORWEN DØD!}
+{FREDENS GUDINDE OG DØDENS GUDINDE ER VÆK!}
+{Alle i sorg! (Undtaget sortelevere)}
+{}
+
+\vspace{.75\baselineskip}
+\newpage  
+
+% ====== Lead story ======
+\par\medskip
+\headline{KAN A'KASTIN SKABE EN NY GUD?}
+\par\medskip
+\deck{Mystiske artefakter dukker op efter Esselaias og Morwens død}
+\par\medskip
+\byline{Redaktionen}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{D}{e} første rygter lød som sædvanlig overtro. Et timeglas, der fik et helt herberg til at falde i søvn. En mønt, som altid vendte tilbage til sin ejer. En tallerken, der skinnede som solen på den ene side og månen på den anden.
+
+Men da lignende beretninger begyndte at strømme ind fra hele A'kastin, blev det vanskeligt at affeje dem som tilfældigheder.
+
+\par\medskip
+
+Siden Esselaia og Morwen blev dræbt, har gamle genstande med forbindelse til gudernes domæner vist tegn på liv, magi eller bevægelse. Flere af dem har været forsvundet i århundreder. Andre blev indtil for nylig betragtet som sagn, dårlige vittigheder eller værdiløst arvegods.
+
+Nu synes de alle at søge mod A'kastin.
+
+\begin{wrapfigure}{r}{0.43\columnwidth}
+  \vspace{-10pt}
+  \begin{infobox}{HVAD VED VI?}
+  Det Glemte Akademi mener, at de mystiske genstande repræsenterer grundlæggende kræfter i verden.
+
+  \par\smallskip
+
+  Akademiet har foreløbigt identificeret forbindelser til blandt andet:
+
+  \begin{itemize}
+    \setlength{\itemsep}{0.15em}
+    \item Natur
+    \item Drager
+    \item Søvn
+    \item Skæbne
+    \item Strategi
+    \item Held
+    \item Sygdom
+    \item Sfærerne
+  \end{itemize}
+
+  Ingen ved, hvor mange genstande der findes.
+  \end{infobox}
+\end{wrapfigure}
+
+Det Glemte Akademi har undersøgt flere af beretningerne og betegner nu genstandene som \textit{domæneartefakter}. Ifølge Akademiets forskere er hver genstand knyttet til et bestemt begreb, en kraft eller en del af verdens orden.
+
+Det forsvundne drageæg fra Salezstads zoologiske have menes eksempelvis at være knyttet til dragerne. Kong Marcus' krone forbindes med strategi og lederskab, mens den pil, der engang blev brugt til at dræbe den genopståede konge, siges at bære selve Skæbnens kraft.
+
+\par\medskip
+
+Blandt de øvrige genstande nævnes et timeglas fyldt med Nattens Sand, Verdens Horn, en mønt skabt af det første guld, der nogensinde blev gravet op, og et kompliceret diagram over sfærerne, som ingen ved Det Glemte Akademi endnu har været i stand til at forklare.
+
+Akademiet understreger, at flere af disse genstande endnu ikke er blevet fundet. Det har ikke forhindret skattejægere, præster, handelsfolk og selvudnævnte helte i at lede efter dem.
+
+\begin{pullquote}
+``Der findes genstande, som indeholder magi. Der findes genstande, som leder magi. Og så findes der genstande, som fortæller verden, hvad den skal være.''
+
+\par\smallskip
+\raggedleft
+--- Magister Holvar, Det Glemte Akademi
+\end{pullquote}
+
+\subsection*{Tre genstande og én dødelig}
+
+Den mest opsigtsvækkende teori kommer fra et beskadiget skrift, som blev fundet i Akademiets arkiver kort efter gudindernes død.
+
+Skriftet beskriver et ritual, hvor tre domæner kan bindes til én dødelig sjæl. Hvis ritualet lykkes, vil den udvalgte ikke længere blot være præst, konge eller magiker, men ophøjes til en ny guddom.
+
+Præcis hvordan ritualet udføres, fremgår ikke tydeligt. Flere sider mangler, og enkelte af de bevarede instruktioner modsiger hinanden.
+
+Én sætning kan dog stadig læses:
+
+\begin{pullquote}
+``Når tre dele af verden samles under én vilje, må den dødelige dø, så guden kan rejse sig.''
+\end{pullquote}
+
+Det har naturligvis skabt en vis bekymring.
+
+Hvis teksten taler sandt, kan enhver person, som samler tre af artefakterne, muligvis forsøge at ophøje sig selv eller en anden. Det er endnu uvist, om kandidaten skal melde sig frivilligt, være præst eller overhovedet vide, hvad der foregår.
+
+Det Glemte Akademi har derfor kraftigt frarådet alle at udføre ukendte ritualer med tre magiske genstande og et dødeligt offer.
+
+Denne advarsel blev udsendt, efter at mindst fire grupper allerede var begyndt at gøre netop dette.
+
+\subsection*{Hvem skal arve de døde gudinder?}
+
+Esselaias og Morwens død har efterladt flere guddommelige ansvarsområder uden en tydelig beskytter.
+
+Dragerne har mistet deres dronning. Naturen mangler sin vogter. De døde venter uden at blive dømt, og ingen ved længere, hvem der holder Tidens nål eller fører Skæbnens tråd.
+
+Det er derfor muligt, at artefakterne ikke blot er blevet fundet ved et tilfælde.
+
+Nogle præster mener, at verden selv har frembragt dem for at finde en efterfølger. Andre mener, at en ukendt magt har samlet dem i A'kastin med et bestemt formål.
+
+En tredje og mere bekymrende teori siger, at artefakterne ikke søger efter den bedste kandidat.
+
+De søger blot efter den første, der er villig.
+
+\begin{infobox}{DE FØRSTE BERETNINGER}
+\textbf{Drageægget:} Det forsvundne æg er angiveligt blevet set nær A'kastin. Vidner beskriver spor efter kløer, selv om ægget endnu ikke skulle være udklækket.
+
+\par\smallskip
+
+\textbf{Nattens Sand:} Et herberg meldes at have sovet i fire dage, efter at et ukendt timeglas blev vendt.
+
+\par\smallskip
+
+\textbf{Den første mønt:} En handelsmand hævder at eje en mønt, som bringer held og altid vender tilbage til hans lomme.
+
+\par\smallskip
+
+\textbf{Sfærediagrammet:} Det Glemte Akademi har modtaget et diagram, der tilsyneladende ændrer udseende, afhængigt af hvem der betragter det.
+\end{infobox}
+
+\subsection*{Kampen er allerede begyndt}
+
+Kelllwan Kirken har erklæret, at ingen ophøjelse kan være lovlig uden guddommelig og kejserlig godkendelse. Ewens præster kræver, at alle artefakter udleveres til forskning, indtil deres funktion kan dokumenteres på forsvarlig vis.
+
+Handelskompagniet har meddelt, at domæneartefakterne næppe har nogen reel værdi, men at kompagniet af hensyn til offentlighedens sikkerhed gerne opkøber dem til en rimelig pris.
+
+Samtidig cirkulerer der rygter om, at flere grupper allerede leder efter Kong Marcus' krone, Verdens Horn og Skæbnens Pil.
+
+Ingen har endnu offentligt erklæret, at de ønsker at blive gud.
+
+Det kan skyldes ydmyghed.
+
+Det kan også skyldes, at de ikke har fundet den tredje genstand endnu.
+
+\separator
+
+\par\medskip
+
+\textit{Redaktionen modtager oplysninger om guddommelige artefakter, mystiske genstande og personer, der pludseligt kræver at blive tiltalt som ``Deres Hellighed''. Anonyme henvendelser accepteres. Falske henvendelser accepteres også, men trykkes kun, hvis de er interessante.}
+
+
+% ============================================================
+% NYHED 1: DRAGEÆGGET
+% ============================================================
+
+\section*{Nyheder}
+
+\subsection*{\HUGE Drageæg set nær A'kastin}
+\par\medskip
+\deck{Vidner fortæller om et enormt æg, der tilsyneladende bevæger sig uden hjælp}
+\par\medskip
+\byline{Stefani Ervind}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{D}{et} forsvundne drageæg fra Salezstads zoologiske have kan være blevet set i nærheden af A'kastin.
+
+Tre uafhængige vidner fortæller, at de i løbet af den samme nat så en stor, skællet genstand bevæge sig gennem landskabet. Ingen af vidnerne kunne forklare, hvem eller hvad der transporterede den.
+
+En lokal bonde, som ønsker at forblive anonym af hensyn til sin familie, sin gård og sine køer, fortæller:
+
+\begin{pullquote}
+``Det lignede et æg på størrelse med en vogn. Det stod først midt på marken. Da jeg kom tilbage med min kone, stod det oppe ved skoven. Der var ingen spor efter hjul, men jorden var brændt under det.''
+
+\par\smallskip
+\raggedleft
+--- Bekymret landmand
+\end{pullquote}
+
+Der blev fundet dybe mærker omkring stedet, som enkelte mener ligner kløer. Andre hævder, at mærkerne blot stammer fra almindelige landbrugsredskaber, omend meget store og usædvanligt varme landbrugsredskaber.
+
+\begin{wrapfigure}{r}{0.43\columnwidth}
+  \vspace{-8pt}
+  \begin{infobox}{DRAGEÆGGET}
+  Ægget blev tidligere opbevaret i Salezstads zoologiske have.
+
+  \par\smallskip
+
+  Det forsvandt kort efter Esselaias død.
+
+  \par\smallskip
+
+  Ingen ved, hvilken type drage der befinder sig i ægget, eller om ægget overhovedet stadig indeholder en drage.
+  \end{infobox}
+\end{wrapfigure}
+
+Esselaia var kendt som Dragernes Dronning. Efter hendes død står dragerne uden en tydelig guddommelig hersker, og flere dragekyndige mener, at æggets opførsel kan være et svar på dette tomrum.
+
+Magister Holvar fra Det Glemte Akademi understreger dog, at et æg normalt ikke er i stand til at søge efter nogen.
+
+``Det ville kræve vilje, instinkt eller en ydre magisk kraft,'' forklarer han. ``Ingen af delene er betryggende.''
+
+En mere kontroversiel teori siger, at ægget ikke indeholder en kommende drage. I stedet kan det være en ældgammel beholder for den kraft, som binder dragerne sammen.
+
+Hvis dette er sandt, kan den person, der besidder ægget, måske gøre krav på Esselaias gamle titel.
+
+Det har allerede ført til flere ekspeditioner. Mindst to grupper af eventyrere, en repræsentant fra Handelskompagniet og en mand, som kalder sig ``Den Nye Dragefar'', er blevet set på vej mod skoven.
+
+Myndighederne opfordrer borgere til ikke at nærme sig ægget.
+
+De opfordrer især borgere til ikke at sidde på det, slå på det, bede til det eller forsøge at sælge det til Handelskompagniet.
+
+\par\medskip
+
+\textit{Redaktionen betaler 10 Fjend for en troværdig tegning af ægget og 20 Fjend for en tegning, der er tilstrækkeligt dramatisk til forsiden.}
+
+\separator
+
+
+% ============================================================
+% NYHED 2: KONG MARCUS
+% ============================================================
+
+\subsection*{\HUGE Kong Marcus' grav skændet}
+\par\medskip
+\deck{Kronen er væk, og et gammelt sår er åbnet på ny}
+\par\medskip
+\byline{Redaktionen}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{K}{ong Marcus'} grav er blevet åbnet. Vagter opdagede indbruddet tidligt om morgenen, da døren til gravkammeret stod åben. Ingen af de omkringliggende segl var blevet brudt, og ingen af vagterne husker at have set nogen gå ind eller ud.
+
+Kongens jordiske rester lå fortsat i graven. Hans krone var derimod forsvundet.
+
+\begin{infobox}{KONG MARCUS}
+Kong Marcus var en af A'kastins mest berømte og omstridte herskere.
+
+\par\smallskip
+
+Efter sin død genopstod han og vendte tilbage til A'kastin. Hans liv blev i en periode bundet til et lys af orkshamanen Hrothgar.
+
+\par\smallskip
+
+Marcus blev til sidst dræbt med en pil, som ifølge legenden var i stand til at gennembore selve Skæbnen.
+\end{infobox}
+
+Gravens vogtere oplyser, at intet andet synes at være stjålet. Guld, våben og kongelige smykker lå stadig på deres plads.
+
+Mere foruroligende er det, at det gamle sår i Marcus' bryst tilsyneladende er åbnet igen. Såret var tørt og lukket, da kongen blev lagt til hvile, men vagterne fandt nyt blod på hans rustning.
+
+En præst blev tilkaldt, men nægtede efterfølgende at kommentere sagen.
+
+\begin{pullquote}
+``Kroner er ikke bare pynt. De er løfter, ansvar og retten til at bestemme, hvem der skal dø for en plan.''
+
+\par\smallskip
+\raggedleft
+--- Ukendt strateg ved hoffet
+\end{pullquote}
+
+Det Glemte Akademi mener, at kronen kan være mere end et kongeligt symbol. Kong Marcus var kendt for at samle hære, alliancer og modstridende interesser under én plan.
+
+Kronen kan derfor være bundet til selve idéen om strategi.
+
+Dette gør tyveriet særligt alvorligt. Hvis kronen virkelig er et domæneartefakt, vil den kunne bruges i det ritual, som ifølge Akademiet kan ophøje et dødeligt væsen til gud.
+
+Den kejserlige administration har allerede erklæret, at kronen fortsat tilhører Imperiet, uanset hvem der bar den, hvem der begravede den, og hvem der måtte finde den.
+
+Samtidig er der kommet nye rygter om Skæbnens Pil.
+
+Pilen, som blev brugt til at dræbe den genopståede Marcus, har ikke været set i mange år. Flere hævder nu, at den igen er dukket op, og at dens spids langsomt drejer i retning af A'kastin.
+
+Ingen ved, om pilen peger mod kronen, kongens morder eller den næste person, hvis skæbne skal afgøres.
+
+Vagterne ved graven har fået ordre til at blive på deres poster.
+
+Dette gælder også, hvis kongen rejser sig igen.
+
+\separator
+
+
+% ============================================================
+% NYHED 3: NATTENS SAND
+% ============================================================
+
+\subsection*{\HUGE Herberg sov i fire dage}
+\par\medskip
+\deck{Gæsterne vågnede udhvilede, sultne og med den samme drøm}
+\par\medskip
+\byline{Mira Falk}
+\medskip
+
+\lettrine[lines=2,lhang=0.1,loversize=0.05]{A}{lle} gæster og ansatte på herberget Den Hvilende Ged faldt samtidig i søvn, efter at en fremmed vendte et sort timeglas på kroens bardisk.
+
+Ingen vågnede igen før fire dage senere.
+
+Hændelsen blev opdaget, da en handelskaravane fandt døren åben og samtlige personer liggende sovende på gulve, stole og borde. Forsøg på at vække dem med råb, koldt vand, klokker og et mindre kontrolleret ildritual havde ingen virkning.
+
+Da det sidste sandkorn faldt gennem timeglasset, vågnede alle på samme tid.
+
+Ingen af de sovende havde taget skade. Flere gamle sår var tværtimod helet, og en gæst, som havde lidt af rygsmerter i mere end tyve år, erklærede, at han aldrig havde haft det bedre.
+
+\begin{wrapfigure}{r}{0.42\columnwidth}
+  \vspace{-8pt}
+  \begin{infobox}{DEN FÆLLES DRØM}
+  Samtlige sovende beskriver:
+
+  \begin{itemize}
+    \setlength{\itemsep}{0.15em}
+    \item en mørk strand,
+    \item en himmel uden stjerner,
+    \item en dør under vandet,
+    \item en stemme, der bad dem hvile.
+  \end{itemize}
+
+  Ingen kan huske, hvad der befandt sig bag døren.
+  \end{infobox}
+\end{wrapfigure}
+
+Det mærkeligste er dog, at alle de sovende fortæller om den samme drøm.
+
+De stod på en strand under en sort himmel. Havet bevægede sig ikke, og sandet løb opad mellem deres fødder. Under vandet kunne de se en dør, og bag døren stod nogen og ventede.
+
+Ingen af gæsterne kan beskrive personen.
+
+De kan kun huske, at stemmen sagde:
+
+\begin{pullquote}
+``Verden er træt. Nogen må lære den at sove.''
+\end{pullquote}
+
+Timeglasset var væk, da gæsterne vågnede. Kroejeren husker kun, at det blev bragt ind af en person iført en mørk kappe.
+
+Personen bestilte ingen mad og drak intet, men spurgte gentagne gange, om kroejeren mente, at døden var den eneste form for evig hvile.
+
+Det Glemte Akademi mener, at sandet kan være det sagnomspundne Nattens Sand. Ifølge enkelte tekster falder dette sand ikke fra sten eller bjerge, men samles fra de øjeblikke, hvor hele verden sover.
+
+Hvis timeglasset er et domæneartefakt, repræsenterer det ikke blot almindelig søvn. Det kan være forbundet med drømme, helbredelse, glemsel og den dybe hvile mellem liv og død.
+
+Herberget er åbnet igen.
+
+Kroejeren tilbyder nu overnatning til halv pris, men kræver, at gæster afleverer alle timeglas ved døren.
+
+\separator
+
+
+% ============================================================
+% NYHED 4: VERDENS HORNET
+% ============================================================
+
+\subsection*{\HUGE Hele verden hørte hornet}
+\par\medskip
+\deck{Ét hornstød blev hørt fra A'kastin til Det Uendelige Hav}
+\par\medskip
+\byline{Redaktionen}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{E}{t} dybt hornstød lød over A'kastin kort før solopgang. Lyden varede mindre end et minut, men beretninger fra rejsende, søfolk og sendebude tyder på, at hornet ikke kun blev hørt lokalt.
+
+Vagter ved Sydporten hørte det.
+
+Fiskere på Det Uendelige Hav hørte det.
+
+En købmand fra Permersland hævder, at alle klokker på hans vogn begyndte at ringe i samme tone, selv om vognen stod stille.
+
+Der er endda kommet en meddelelse fra en ekspedition i De Uendelige Sletter, som beskriver det samme hornstød på præcis det samme tidspunkt.
+
+\begin{pullquote}
+``Det lød ikke højt. Det lød tæt på. Som om nogen stod lige bag mig, uanset hvilken vej jeg vendte mig.''
+
+\par\smallskip
+\raggedleft
+--- Vagt ved Sydporten
+\end{pullquote}
+
+Flere lærde mener, at lyden kan stamme fra Verdens Horn.
+
+Ifølge de ældste sagn blev hornet skabt, så hele Kalish kunne advares på samme tid. Hornet skulle kun lyde, når verden stod over for en trussel, som intet enkelt land, folk eller gud kunne standse alene.
+
+Der findes dog et væsentligt problem med denne forklaring.
+
+Verdens Horn befinder sig efter sigende stadig i et aflåst skatkammer.
+
+\begin{infobox}{VERDENS HORNET}
+Hornets nuværende ejer er ukendt.
+
+\par\smallskip
+
+Flere lande hævder at besidde det ægte horn. Det Glemte Akademi vurderer, at mindst syv af disse horn er forfalskninger.
+
+\par\smallskip
+
+Det ottende er muligvis også en forfalskning, men har indtil videre spist to forskere.
+\end{infobox}
+
+En delegation blev sendt for at undersøge det horn, som de fleste lærde anser for at være det ægte. Seglene på døren var ubrudte, og støvet på gulvet viste ingen fodspor.
+
+Hornet lå på sin sædvanlige plads.
+
+Det var dog varmt.
+
+På overfladen var der opstået tre nye symboler. Det første lignede et træ. Det andet lignede en krone. Det tredje kunne ingen genkende.
+
+Det Glemte Akademi mener, at hornet muligvis ikke blev blæst af en person. Det kan have advaret verden af egen vilje.
+
+Andre mener, at hornstødet ikke var en advarsel, men en indkaldelse.
+
+Hvis Verdens Horn er et domæneartefakt for musik, kan det måske samle mennesker, hære eller selve verden omkring én stemme.
+
+Spørgsmålet er derfor ikke kun, hvem der blæste i hornet.
+
+Spørgsmålet er, hvem der blev kaldt.
+
+\par\medskip
+
+\textit{Borgere opfordres til at indrapportere fremtidige hornstød. Dette gælder ikke almindelige jagthorn, militære signaler eller naboer, der øver sig efter midnat.}
+
+\separator
+
+
+
+\section*{Kultur \& Tro}
+
+\subsection*{\HUGE Den Store Rangliste}
+\par\medskip
+\deck{Hvem den mest populære gud i Kalish?}
+\par\medskip
+\byline{Broder Anselm, gæsteskribent}
+\medskip
+
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{D}{e} lærde ved Det Glemte Akademi har i årevis diskuteret, hvilke guder der egentlig står stærkest i folkets hjerter. Redaktionen har derfor foretaget en undersøgelse blandt præster, lejesvende, og drukkenbolte.
+
+Resultatet er denne rangliste over rigets mest omtalte guddomme. 
+
+Har du en anden oplevelse? Hvorfor ikke skrive til os med din mening!
+
+\separator
+\par\medskip
+
+\textbf{\Large 11. Den Navnløse - Gudernes Gud}
+\par
+
+Selv guderne taler sjældent om dem direkte. Og det siges at kende navnet på denne gud skal man betale med sin sindstilstand. 
+
+De står over guderne som den højeste magt, baggrunden til ordenen blandt guderne og den kraft, som selv de mægtigste må bøje sig for. Denne gud har ingen præster og lader til at sove. Ingen kender noget til dem, men guderne ved denne overgud holder dem på plads.
+
+Guden lader endda til at være todelt, med en del der hærsker fra den øverste Sfære, og en der hærsker fra Dæmonernes Sfære.
+
+\par\medskip
+\textbf{\Large 10. Carmenor - Den Første Dværg Gud}
+\par
+
+Dværgenes gamle gud og engang hersker over deres folk. I dag nævnes han mest i gamle sange og sørgmodige fortællinger. Hans fald gav plads til stærkere kræfter, og selv blandt dværgene er hans navn begyndt at samle støv. Carmenor blev dræbt af Daikia's børn: Ilsherne.
+
+Et sørgeligt eftermæle, men dog et værdigt et.
+
+\begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=0.33\columnwidth]{CarmenorLogo.jpg}
+  \end{center}
+  \caption{Det ældste skjold fundet med Carmenors symbol. Dette har nok inspireret Nordlands symbol.}
+\end{figure}
+
+\par\medskip
+\textbf{\Large 9. Alman - Den Naturens Gud}
+\par
+Naturens vogter og elementernes gamle herre. I modsætning til mange andre guder søgte Alman hverken krig eller storhed. Hans død efterlod dog verden langt mere ustabil, end mange ønsker at indrømme. Alman blev dræbt af Ballator, da sønnen af Hadets Ærkedæmon startede Dæmonkrigen.
+
+Han mindes stadig af nogen folk, men det er ikke alle der kender til denne gamle gud, og du finder ingen præster for en gud som ikke kan give dem.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.33\textwidth]{alman.jpg}
+  \end{center}
+    \caption{Alman's symbol}
+\end{figure}
+
+\par\medskip
+\textbf{\Large 8. Daikia - Mørkets moder}
+\par
+
+Sortelvernes gamle gudinde og ophav til meget af den uro, verden stadig mærker efterdønningerne af. Hendes tilhængere frygtede hende næsten lige så meget, som de tilbad hende. Hun blev dræbt af Raffael Moordet.
+
+Der findes stadig folk, der hvisker hendes navn om natten. Det siges endda at der også er en gruppe af sortelevere som ikke har opgivet at tilbede hende.
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.15\textwidth]{Daikia.png}
+  \end{center}
+  \caption{Daikia's Symbol}
+\end{figure}
+
+\par\medskip
+\textbf{\Large 7. Ewen - Visdommens Herre}
+\par
+
+Magiens vogter og de lærdes store beskytter. Ewen elsker viden, diskussioner og mysterier, som ingen andre helt forstår endnu.
+
+Præsterne siger, at han søger sandheden i alt.
+
+Kritikere siger, at han kan formå at gøre enhver løsning til et problem.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.33\textwidth]{Ewen.jpg}
+  \end{center}
+  \caption{Ewen's Symbol}
+\end{figure}
+\par\medskip
+
+\textbf{\Large 6. Raffael Moordet - Skyggernes Fyrste}
+\par
+
+Tyvenes, løgnernes og dæmonernes mester. En nederdrægtig og lumsk figur, som selv de mægtigste guder har prøvet at tage livet af. Den sidste der prøvede var Daikia, og Raffael Moordet brugte Sjælenes Malstrøm og Gudestenene til at dræbe hende.
+
+Hans præster lover frihed, magt og hemmelig viden. Vi kan kun anbefale at lade være med at tale med dem.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.33\textwidth]{RaffaelSymbol.png}
+  \end{center}
+  \caption{Raffael Moordet's Symbol}
+\end{figure}
+\par\medskip
+
+\textbf{\Large 5. Orlek - Krigens Brøl}
+\par
+
+Grønhudernes gud og den levende ånd af kamp, styrke og erobring. Orlek gør intet halvt. Hvis noget er værd at gøre, er det værd at gøre med blod på øksen.
+
+Overraskende mange følger ham frivilligt.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.33\textwidth]{OrlekSymbol.jpg}
+  \end{center}
+  \caption{Orlek's Symbol}
+\end{figure}
+\par\medskip
+
+
+\textbf{\Large 4. Morwen - Dødens Dronning} 
+\par Morwen var gudinde for døden, tiden, skatterne og den orden, der holdt Kalishs økonomi sammen. Hun var blandt de yngste gudinder, men nåede på kort tid at blive en fast del af både begravelser, kontrakter, gældsbreve og kejserlige skattekontorer. 
+
+I en verden, hvor troldmænd og alkymister kan skabe guld, var det Morwens vilje, der sikrede, at værdi var mere end blot skinnende metal. En mønt var en mønt, en gæld var en gæld, og en underskrevet aftale betød noget. 
+
+Hun modsatte sig desuden nekromanti og vanærelse af de døde. Det gjorde hende upopulær blandt nekromantikere og ganske populær blandt næsten alle andre. 
+
+Efter hendes død virker syvendepladsen næsten beskeden. 
+
+\begin{figure}[H] 
+  \begin{center} 
+    \includegraphics[width=0.33\textwidth]{MorwenSymbol.png} 
+  \end{center} 
+  \caption{Morwens Symbol} 
+\end{figure}
+
+\par\medskip
+\textbf{\Large 3. Esselaia - Fredens Vogter}
+\par
+
+Den nyligt dræbte gudinde for drager, kærlighed, fred og elementerne. Hun prædikede fred, forståelse og troen på, at selv gamle fjender kunne finde fælles grund. 
+
+Det gjorde hende enten til den viseste blandt guderne eller den mest optimistiske. Efter hendes død må Kalish nu finde ud af, om hendes lære kan overleve uden hende.
+
+\begin{figure}[H]
+  \begin{center}
+      \includegraphics[width=0.33\textwidth]{Esselaia Symbol full.png}
+  \end{center}  
+  \caption{Esselaia's Symbol}
+\end{figure}
+
+
+\textbf{\Large 2. Ishtar - Den Førstefødte}
+\par
+
+Sortelvernes store dronning og en tidligere Halv-overgud som har nedværdiget sig selv til \underline{kun} at være gudinde. Loyalitet, styrke og lydighed er hendes idealer, og hendes folk følger hende med næsten skræmmende hengivenhed.
+
+Selv hendes fjender omtaler hende med respekt, især fordi hende og hendes brødre, ilsherne, er kendt for at dræbe guder som en hobby.
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[height=0.15\textheight]{Ishtar.png}
+  \end{center}
+  \caption{Ishtar's Symbol}
+\end{figure}
+\par\medskip
+
+\textbf{\Large 1. Kelllwan - Kongen på Tronen}
+\par
+
+Gudernes konge, beskytter af familier, smede og lov. Kelllwan er den type gud, der forventer orden, loyalitet og styrke af sine tilhængere.
+
+Han er respekteret af næsten alle. Og hans messias, Refulsit Lux, er kendt for sin autoritære hengivelse til loven.
+
+\begin{pullquote}  
+I en landsby nær Nordlands sydgrænse blev messiasen gjort opmærksom på, at et barn havde stjålet brød fra et tempel. Præsterne bad om nåde og forklarede, at barnets familie var døde under dæmonernes hærgen.
+
+Messiasen lod barnet fremføre for sig og spurgte kun ét spørgsmål:
+
+“Vidste du, at det var forbudt?”
+
+Da barnet nikkede, lod messiasen straffen fuldbyrde offentligt, og Messiasen var selv bødlen da barnet skulle henrettes.
+\end{pullquote}
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.33\textwidth]{KelllwanSymbol.png}
+  \end{center}
+  \caption{Kelllwan's Symbol}
+\end{figure}
+
+\separator
+
+\par\medskip
+
+\textit{Redaktionen gør opmærksom på, at flere kirker allerede har sendt vrede breve vedrørende denne rangliste. Dette tager vi som et tegn på journalistisk succes.}
+
+\section*{Bekendtgørelser}
+
+\subsection*{Fra Imperiets Lovkontor}
+
+\textit{Følgende bekendtgørelser er fremsendt til redaktionen under kejserligt segl. Redaktionen har valgt at trykke dem i fuld længde, da bøden for ikke at gøre det var nok til at bygge en ny Sydport.}
+
+\par\medskip
+
+\begin{infobox}{NYE LOVE FRA IMPERIET}
+Ved kejserlig myndighed, i Kejserinde Aurelia Fjendebanes navn, bekendtgøres følgende nødvendige love for rigets sikkerhed.
+\end{infobox}
+
+\subsection*{Kirkelov MXII: Om guddommelige dødsfald}
+
+\paragraf{1} Alle borgere pålægges straks at indrapportere tegn på dæmoniske manifestationer til nærmeste tempel, kaserne eller embedsmand. Dette er for at imødekomme en potentiel ny trussel.
+
+\paragraf{2} Det er forbudt uden tilladelse at erklære en gud for død, udød, genfødt eller ophøjet.
+
+\paragraf{3} Overtrædelse straffes med bøde, offentlig irettesættelse eller henrettelse.
+
+\subsection*{Arbejderloven XXII: Om Sydportens Arbejdspligt}
+
+\paragraf{1} Alle raske borgere inden for tre dagsrejser af Sydporten kan pålægges midlertidig arbejdspligt til genopbygning af rigets sydlige forsvar.
+
+\paragraf{2} Fritagelse kan gives til:
+\begin{itemize}
+  \item børn under sværdhøjde,
+  \item døde borgere med bekræftet attest fra Morwen Kirken (Dette inkludere ikke de udøde borgere),
+  \item personer i aktiv kamp mod dæmoner,
+  \item adelige.
+\end{itemize}
+
+\paragraf{3} Arbejde udført under Kelllwan Kirkens opsyn tæller som både samfundspligt og moralsk forbedring. Løn udbetales efter gældende takster.
+
+\subsection*{Provinslov VI: Om navne og byer}
+
+\paragraf{1} Alle offentlige kort, tavler og handelsdokumenter skal fremover indeholde plads til mulige fremtidige navneændringer af byer, fæstninger og særligt symbolske steder.
+
+\paragraf{2} Spørgsmålet om Marcusstads/Dorianborgs eventuelle omdøbning er endnu ikke afgjort, men borgere mindes om, at højlydt modstand mod navneændringer kan tolkes som mangel på taknemmelighed over for rigets helte.
+
+\subsection*{Handelslov XIV: Om private valutaer og møntens fortsatte værdi} 
+
+\paragraf{1} Handelskompagni Guld, herefter omtalt som HKG, må ikke præsenteres som kejserlig mønt, Fjend eller anden guddommeligt sikret valuta. 
+
+\paragraf{2} Alle kompagnier, laug og private handelsordninger skal tydeligt oplyse, om en betaling kan bruges til at købe brød, betale gæld og indfri skat. 
+
+\paragraf{3} Handelskompagniet kan fortsat betale medarbejdere i HKG, da det anses som arbejderens eget ansvar at efterspørge betaling, som også har værdi uden for Handelskompagniets egne boder. 
+
+\paragraf{4} Den kejserlige mønt Fjend har efter Morwens død fortsat præcis den værdi, som Imperiet erklærer, at den har. 
+
+\paragraf{5} Guld fremstillet gennem alkymi, trolddom, bøn, forbandelser eller anden unaturlig værdiskabelse skal deklareres ved enhver handel og kan ikke anvendes til skattebetaling uden kejserligt stempel. 
+
+\paragraf{6} Det er forbudt at hæve priser alene med begrundelsen: ``Gudinden er død.'' 
+
+\paragraf{7} Det er ligeledes forbudt at opkøbe hele landsbyers beholdning af korn, salt eller jern med henblik på senere videresalg under en formodet økonomisk undergang. 
+
+\paragraf{8} Overtrædelse straffes med bøde i rigtig valuta. Lovkontoret afgør på betalingstidspunktet, hvad der tæller som rigtig valuta.
+
+\newpage
+\section*{Muntre Indslag}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.90\textwidth]{thorvalds_blaererovs_vise_noder_og_akkorder}
+\end{figure}
+
+Tekst og Musik: Christian Colberg
+
+\begin{multicols}{2}
+\raggedcolumns
+
+\noindent Mit navn det er Thorvald og jeg er kriger\\
+Nu skal i høre om min færd\\
+Jeg drog af sted fra min landsby Brotland\\
+Ud for at vise mit sande værd\\
+Min rejse var lang og fyldt med fare\\
+Som ingen anden vil´ kunne klare\\
+\\
+Sikke noget blær, sikke noget blær\\
+Dyp ham i tjære og rul ham i fjer\\
+Sikke noget blær, sikke noget blær\\
+Dyp ham i tjære og rul ham i fjer\\
+\\
+Jeg drog mod nord på min mægtige ganger\\
+Og kom snart til kæmpernes store slot\\
+Der smadre jeg porten og banked´ dem alle\\
+Og blev derfor udnævnt til kæmpernes drot\\
+Men konge jobbet var ikke mig\\
+Så jeg fanged´ en bjørn og red min vej\\
+\\
+Sikke noget blær…\\
+\\
+Jeg drog mod syd for at finde solen\\
+Og travede hen over ørknens sand\\
+Hvad så jeg der komme i det fjerne\\
+En hær af vampyrer, mindst 1000 mand\\
+Godt jeg havde et stort hvidløg\\
+og vampyrerne gik alle op i røg\\
+\\
+Sikke noget blær…\\
+\\
+Min bjørn den døde der i syden\\
+Så vest over gik jeg nu til fods\\
+Der blev jeg fanget af 700 trolde\\
+der alle ville banke mig til blods\\
+Men så meget som en skræmme fik jeg ikke\\
+For jeg sparkede dem i deres store pi..!\\
+MAVER!\\
+\\
+Sikke noget blær…\\
+\\
+Så tog jeg til havet og svømmede over\\
+Langt mod øst lå en kæmpe strand\\
+Der så jeg en krabbe på 10.000 kg\\
+Liggende der imellem mig og land\\
+Men krabben den blev nu aldrig min død\\
+Og til middag der spiste jeg krabbens kød\\
+\\
+Sikke noget blær…\\
+\\
+I nord, i syd, i øst og vesten\\
+Der regnes jeg for en mægtig mand\\
+Min titel vil nu og for altid være:\\
+Den største kriger i dette land\\
+Og skulle min sang være løgn og blær\\
+Så dyp mig i tjære og rul mig i fjer\\
+\\
+Sikke noget blær…\\
+Sikke noget blær…\\
+
+\end{multicols}
+
+\newpage
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{krydsord1-Blank.png}
+\end{figure}
+\newpage
+
+
+\section*{Reklamer}
+\subsection*{BRING JERN! OG SULFUR!}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{PIFPAF.png}
+\end{figure}
+VI BRUG FOR SULFUR OG JERN TIL SPRINGE EVLER OP! DU BRING OS 5 JERN OG 5 SULFUR OG VI GIVE DIG SPECIEL PREMIE! DET VÆRE BOMBE I BREV! 
+- PIF OG PAF!
+
+\begin{center}
+\fbox{
+\begin{minipage}{0.9\linewidth}
+
+\begin{center}
+{\Large \textbf{KELLLWAN KIRKEN KALDER}}\\
+\medskip
+{\large \textit{Sydporten skal genopbygges}}
+\end{center}
+
+\par\medskip
+
+Efter år med fejlslagne forsøg er arbejdet ved Sydporten nu begyndt under Kelllwan Kirkens ledelse. Men sten rejser sig ikke alene, og dæmonerne fra Letho venter ikke tålmodigt.
+
+\par\medskip
+
+Kirken søger derfor arbejdere, minefolk, eventyrere og ærlige borgere til indsamling af materialer til rigets forsvar.
+
+\par\medskip
+
+\begin{center}
+\textbf{BETALING UDBETALES DIREKTE AF KELLLWAN KIRKEN}
+\end{center}
+
+\begin{center}
+\Huge
+10 Fjend for Jern\\
+20 Fjend for Mitril
+\end{center}
+
+\par\medskip
+
+Materialer afleveres ved Kelllwan Kirkens lejre nær Sydporten.
+
+\par\medskip
+
+Kun gennem handling sikres Kalish mod Lethos rædsler.
+
+
+\end{minipage}
+}
+\end{center}
+% ====== Handelskompagniets Kongetand-reklame ======
+\begin{center}
+\begin{tcolorbox}[
+  enhanced,
+  width=0.94\textwidth,
+  colback=Goldenrod!7,
+  colframe=Maroon!90!black,
+  boxrule=1.6pt,
+  borderline={0.6pt}{3pt}{Goldenrod!80!black},
+  sharp corners,
+  boxsep=2mm,
+  left=6mm,
+  right=6mm,
+  top=5mm,
+  bottom=5mm,
+  overlay={
+    % Dekorative hjørner
+    \draw[Goldenrod!80!black,line width=1.3pt]
+      ([xshift=2mm,yshift=-2mm]frame.north west)
+      -- ++(14mm,0) -- ++(0,-7mm);
+
+    \draw[Goldenrod!80!black,line width=1.3pt]
+      ([xshift=-2mm,yshift=-2mm]frame.north east)
+      -- ++(-14mm,0) -- ++(0,-7mm);
+
+    \draw[Goldenrod!80!black,line width=1.3pt]
+      ([xshift=2mm,yshift=2mm]frame.south west)
+      -- ++(14mm,0) -- ++(0,7mm);
+
+    \draw[Goldenrod!80!black,line width=1.3pt]
+      ([xshift=-2mm,yshift=2mm]frame.south east)
+      -- ++(-14mm,0) -- ++(0,7mm);
+
+    % Lille segl øverst
+    \node[
+      circle,
+      fill=Maroon!90!black,
+      draw=Goldenrod,
+      line width=1pt,
+      minimum size=12mm,
+      text=white,
+      font=\sffamily\bfseries\scriptsize
+    ] at ([yshift=-7mm]frame.north east) {HKG};
+  }
+]
+
+% ----- Overskrift -----
+\begin{center}
+{\sffamily\bfseries\small\color{Maroon!90!black}
+EN ENESTÅENDE MULIGHED FRA HANDELSKOMPAGNIET}
+
+\vspace{0.25em}
+
+{\sffamily\bfseries\fontsize{27}{29}\selectfont
+\color{Maroon!90!black}
+Bliv rig uden at arbejde!}
+
+\vspace{0.3em}
+
+{\color{Goldenrod!80!black}\rule{0.78\linewidth}{1.2pt}}
+\end{center}
+
+\vspace{0.5em}
+
+Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger!
+
+\vspace{0.7em}
+
+% ----- Hovedløftet -----
+\begin{center}
+\begin{tcolorbox}[
+  width=0.82\linewidth,
+  colback=Maroon!90!black,
+  colframe=Goldenrod!80!black,
+  boxrule=1.2pt,
+  sharp corners,
+  left=3mm,
+  right=3mm,
+  top=2.5mm,
+  bottom=2.5mm
+]
+\centering
+{\sffamily\bfseries\fontsize{21}{23}\selectfont\color{white}
+Tjen op til \textbf{500 Fjend per dag}!}
+\end{tcolorbox}
+\end{center}
+
+\vspace{0.3em}
+
+Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i.
+
+\vspace{0.5em}
+
+Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni!
+
+\vspace{0.7em}
+
+% ----- Trin-for-trin model -----
+\begin{tcolorbox}[
+  enhanced,
+  colback=white,
+  colframe=Goldenrod!70!black,
+  boxrule=0.9pt,
+  sharp corners,
+  left=5mm,
+  right=5mm,
+  top=3mm,
+  bottom=3mm,
+  title={\sffamily\bfseries\large Sådan fungerer det:},
+  coltitle=white,
+  colbacktitle=Maroon!90!black,
+  fonttitle=\sffamily\bfseries
+]
+
+\begingroup
+\renewcommand{\labelitemi}{%
+  \textcolor{Maroon!90!black}{\large\textbullet}%
+}
+\setlength{\itemsep}{0.45em}
+
+\begin{itemize}
+  \item Du samler 3 kongetander.
+  \item Du finder 3 venner, der arbejder under dig.
+  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
+  \item Når de finder 3 venner hver, får du hele 36 kongetand!
+\end{itemize}
+\endgroup
+
+\end{tcolorbox}
+
+\vspace{0.7em}
+
+% ----- Handelsrate -----
+\begin{center}
+{\sffamily\bfseries\small\color{Maroon!90!black}
+HANDELSKOMPAGNIETS ATRAKTIVE HANDELSRATE}
+
+\vspace{0.25em}
+
+\fcolorbox{Maroon!90!black}{Goldenrod!18}{%
+  \parbox{0.82\linewidth}{%
+    \centering
+    \vspace{0.35em}
+    Med vores atraktive handelsrate tilbyder vi
+    \textbf{\Large 5 HKG}\footnote{Handelskompagni Guld}
+    per kongetand.
+    \vspace{0.35em}
+  }%
+}
+\end{center}
+
+\vspace{0.7em}
+
+Beviser du dit værd, bliver du udpeget til at være den officielle
+\textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.}
+
+\vspace{0.8em}
+
+% ----- Afsluttende opfordring -----
+\begin{center}
+\colorbox{Maroon!90!black}{%
+  \parbox{0.88\linewidth}{%
+    \centering
+    \vspace{0.45em}
+    {\sffamily\bfseries\large\color{white}
+    Kontakt din lokale repræsentant for Handelskompagniet i dag!}
+    \vspace{0.45em}
+  }%
+}
+\end{center}
+
+\vspace{0.35em}
+
+\begin{center}
+{\scriptsize\sffamily\itshape\color{black!65}
+Handelskompagniet: Din indsats. Vores fremgang.}
+\end{center}
+
+\end{tcolorbox}
+\end{center}
+
+
+\separator
+
+
+
+\begin{center}
+\fbox{%
+\begin{minipage}{0.9\linewidth}
+\centering
+\vspace{2em}
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+\path[
+  decorate,
+  decoration={
+    text along path,
+    text={|\Large\bfseries|KOM SPIS VED DEN TISSENDE NYMFE},
+    text align=center
+  }
+]
+(-6,0) arc[start angle=160, end angle=20, radius=6cm];
+
+\useasboundingbox (-6,0) rectangle (6,1.4);
+\end{tikzpicture}%
+}
+
+\vspace{-0.5em}
+
+{\LARGE\bfseries KOM OVER TIL KROEN!}
+
+\begin{itemize}
+  \item ØL: 1 Fjend
+  \item Mad: 2 Fjend
+  \item Flaske: 10 Fjend
+  \item God Stemning: 0 Fjend
+\end{itemize}
+
+\end{minipage}%
+}
+\end{center}
+
+
+\begin{center}
+\begin{tcolorbox}[
+  enhanced,
+  width=0.94\textwidth,
+  colback=ForestGreen!4,
+  colframe=black,
+  boxrule=1.4pt,
+  borderline={0.7pt}{3pt}{ForestGreen!70!black},
+  sharp corners,
+  boxsep=2mm,
+  left=5mm,
+  right=5mm,
+  top=4mm,
+  bottom=3mm,
+  overlay={
+    % Ornamenter i hjørnerne
+    \draw[ForestGreen!70!black,line width=1.2pt]
+      ([xshift=2mm,yshift=-2mm]frame.north west)
+      -- ++(11mm,0) -- ++(0,-7mm);
+
+    \draw[ForestGreen!70!black,line width=1.2pt]
+      ([xshift=-2mm,yshift=-2mm]frame.north east)
+      -- ++(-11mm,0) -- ++(0,-7mm);
+
+    \draw[ForestGreen!70!black,line width=1.2pt]
+      ([xshift=2mm,yshift=2mm]frame.south west)
+      -- ++(11mm,0) -- ++(0,7mm);
+
+    \draw[ForestGreen!70!black,line width=1.2pt]
+      ([xshift=-2mm,yshift=2mm]frame.south east)
+      -- ++(-11mm,0) -- ++(0,7mm);
+  }
+]
+
+\begin{center}
+{\sffamily\bfseries\small
+TRÆT AF SVAGE GUDER OG TOMME LØFTER?}
+
+\vspace{0.15em}
+
+{\sffamily\bfseries\fontsize{28}{29}\selectfont
+\textcolor{ForestGreen!55!black}{REJS DIG FOR ROHAR!}}
+
+\vspace{0.1em}
+
+{\sffamily\bfseries\large
+KONGEN - DEN DER KOM TILBAGE}
+\end{center}
+
+\vspace{0.5em}
+
+\noindent
+\colorbox{black}{%
+  \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+    \centering
+    \color{white}
+    \itshape\large
+    ``Før var jeg træt og deprimeret, men så prøvede jeg
+    at tilbede Rohar. Nu har jeg styrke, et formål og en
+    gud, der råber gode råd gennem min økse!''
+    
+    \normalfont\small
+    - Gruk Jernpande, tidligere Orlek Præst
+  }%
+}
+
+
+\vspace{0.7em}
+
+\begin{center}
+\colorbox{ForestGreen!70!black}{%
+  \parbox{0.88\linewidth}{%
+    \centering
+    \color{white}
+    \sffamily\bfseries\large
+    SPØRG EFTER ROHAR PRÆSTEN ELLER TEMPELKRIGEREN HVIS DU GERNE VIL VIDE MERE!
+
+    \smallskip
+    \normalsize
+    Medbring jern, og alle dine fjend for at vise at du er værdig.
+  }%
+}
+\end{center}
+
+\vspace{0.4em}
+
+\begin{center}
+{\sffamily\bfseries
+ROHAR DØDE. DET STOPPEDE HAM IKKE.\\
+HVAD ER DIN UNDSKYLDNING?}
+\end{center}
+
+
+\end{tcolorbox}
+\end{center}
+
+
+\clearpage
+\thispagestyle{newspaper}
+
+\begin{center}
+  \includegraphics[
+    width=\textwidth,
+    height=0.96\textheight,
+    keepaspectratio,
+    trim={12mm 17mm 12mm 17mm},
+    clip
+  ]{artikel.pdf}
+\end{center}
+
+\end{document} 
