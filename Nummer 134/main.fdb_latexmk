@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1782303449.23315 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 134/main.tex" "main.pdf" "main" 1782303453.63911 0
+["pdflatex"] 1782390253.54019 "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 134/main.tex" "main.pdf" "main" 1782390258.18836 0
   "C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1773907934 165035 80bb95a7c2f9ede74bee0121979afd66 ""
   "C:/Users/NTNS/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1758610384 14064 9e28e0b7065960984f8a7349b67ea4d2 ""
   "C:/Users/NTNS/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1757330304 13147728 dcf0c0a0176764b7ff9e3d17bed5abab ""
@@ -265,10 +265,11 @@
   "RaffaelSymbol.png" 1770622085 250085 84ea5d0025e65968701ac83bf7a22bf0 ""
   "alman.jpg" 1778494071 7302 739b4d310428eb6462248241558fa6c2 ""
   "artikel.pdf" 1782118454 300490 9e915db939f842b2723b55c691246157 ""
-  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 134/main.tex" 1782303442 47558 de295d42178afeb9871a2eb271638aee ""
-  "krydsord1-Blank.png" 1778234539 295872 ec1b7b2c1d57f479c3d947d435315e4e ""
-  "main.aux" 1782303453 1422 f33f171fb27b5c54003c090e41e207fa "pdflatex"
-  "main.tex" 1782303442 47558 de295d42178afeb9871a2eb271638aee ""
+  "c:/Users/NTNS/OneDrive - Telenor/Documents/GitHub/Den Rullende Sten/Den Rullende Sten/Nummer 134/main.tex" 1782390251 44239 b0d49a9c934487e5490b2d4505cdb4cf ""
+  "krydsord2-Blank.png" 1782390213 24227 8f150fbcc2ca5842260b669134d3d023 ""
+  "krydsord2-Spørgsmål.png" 1782390170 250048 42a05eff84684ef0fb5e682ff9f8edb8 ""
+  "main.aux" 1782390257 1422 f33f171fb27b5c54003c090e41e207fa "pdflatex"
+  "main.tex" 1782390251 44239 b0d49a9c934487e5490b2d4505cdb4cf ""
   "thorvalds_blaererovs_vise_noder_og_akkorder.png" 1775546157 8825 902192c57870d2836cb075f19e080b9e ""
   (generated)
   "main.aux"
