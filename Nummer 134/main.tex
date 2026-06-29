@@ -63,7 +63,7 @@
 \newcommand{\deck}[1]{\textsf{\large\itshape #1}}
 \newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
 \usepackage{tikz}
-\usetikzlibrary{fadings,patterns}
+\usetikzlibrary{fadings,patterns,shapes.geometric}
 
 % Define a generic "fade to transparent" around a rectangle
 \tikzfading[name=image fade,
@@ -206,6 +206,8 @@
 }
  
 
+
+
 \begin{document}
 %\pdfpageheight=\paperwidth
 %\pdfpagewidth=\paperheight
@@ -223,10 +225,10 @@
 
 
 % Front feature image (keeps aspect ratio, spans \textwidth)
-\FrontFeatureImage{Fælles.png}
-{ESSELAIA OG MORWEN DØD!}
-{FREDENS GUDINDE OG DØDENS GUDINDE ER VÆK!}
-{Alle i sorg! (Undtaget sortelevere)}
+\FrontFeatureImage{Forside.png}
+{Artefakter dukker op i A'kastin!}
+{Ser vi en ny guds fødsel?}
+{Imperiet påråber sig første ret.}
 {}
 
 \vspace{.75\baselineskip}
@@ -241,7 +243,8 @@
 \byline{Redaktionen}
 \medskip
 
-\begin{wrapfigure}{r}{0.43\columnwidth}
+\begin{wrapfigure}[24]{r}{0.43\columnwidth}
+  \vspace{4pt}
   \begin{infobox}{HVAD VED VI?}
   Det Glemte Akademi mener, at de mystiske genstande repræsenterer grundlæggende kræfter i verden.
 
@@ -270,7 +273,6 @@
     \item Ødelæggelse
   \end{itemize}
   \end{infobox}
-  \vspace{-10pt}
 \end{wrapfigure}
 
 \lettrine[lines=2,lhang=0.1,loversize=0.05]{D}{e} første rygter lød som sædvanlig overtro. Et timeglas, der fik et helt herberg til at falde i søvn. En mønt skabt af det første guld.
@@ -845,32 +847,11 @@ Eller den er endnu ikke begyndt.
 Det er også muligt, at hendes sjæl endnu kæmper imod. Men den vil uden tvivl tabe. Det eneste jeg har set modstå denne transformation er Lysets og Retfærdighedens Dæmon.
 
 % ----- Tegn-boks -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=Goldenrod!8,
-  colframe=Maroon!90!black,
-  boxrule=1pt,
-  borderline={0.5pt}{2pt}{Goldenrod!80!black},
-  sharp corners,
-  title={\sffamily\bfseries TEGN PÅ AT KRIGEN VÅGNER},
-  colbacktitle=Maroon!90!black,
-  coltitle=white,
-  fontupper=\small
-]
 
-Akademiets forskere bør ifølge Krell holde øje med:
+% ----- Tegn-boks -----
+% ----- Tegn-boks -----
 
-\begin{itemize}
-  \setlength{\itemsep}{0.25em}
-  \item Gamle fredsaftaler, der bryder sammen uden tydelig årsag.
-  \item Soldater, som drømmer om den samme ukendte fane.
-  \item Hære, der marcherer uden at have modtaget en ordre.
-\end{itemize}
 
-Et enkelt tegn beviser intet. Flere samtidige tegn bør
-rapporteres til Det Glemte Akademi eller en ansvarlig
-religiøs myndighed.
-\end{tcolorbox}
 
 \subsection*{Kan en ny ærkedæmon standses?}
 
@@ -880,6 +861,47 @@ religiøs myndighed.
 Ærkedæmon. Hvordan stopper vi hende?}
 
 \par\smallskip
+\begin{wrapfigure}[14]{r}{0.46\textwidth}
+  \vspace{-0.8\baselineskip}
+
+  \begin{tcolorbox}[
+    enhanced,
+    width=\linewidth,
+    colback=Goldenrod!8,
+    colframe=Maroon!90!black,
+    boxrule=1pt,
+    borderline={0.5pt}{2pt}{Goldenrod!80!black},
+    sharp corners,
+    boxsep=2mm,
+    left=3mm,
+    right=3mm,
+    top=2.5mm,
+    bottom=2.5mm,
+    title={TEGN PÅ AT KRIGEN VÅGNER},
+    fonttitle=\sffamily\bfseries\small,
+    colbacktitle=Maroon!90!black,
+    coltitle=white,
+    fontupper=\small,
+    before skip=0pt,
+    after skip=0pt
+  ]
+
+  \centering
+
+  Ser du dette symbol, kan det være et tegn på, at
+  Krigens Ærkedæmon er vågnet.
+
+  \par\smallskip
+
+  \includegraphics[
+    width=0.82\linewidth,
+    keepaspectratio
+  ]{Krigens Dæmon.png}
+
+  \end{tcolorbox}
+
+  \vspace{-0.5\baselineskip}
+\end{wrapfigure}
 
 \noindent
 {\sffamily\bfseries KRELL:}
@@ -1029,19 +1051,27 @@ Sikke noget blær…\\
 
 \end{multicols}
 
-\newpage
+\clearpage
+\thispagestyle{empty}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{krydsord2-Blank.png}
-\end{figure}
+\noindent
+\makebox[\textwidth][c]{%
+  \includegraphics[
+    width=\paperwidth,
+  ]{krydsord2-Blank.png}%
+}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{krydsord2-Spørgsmål}
-\end{figure}
+\clearpage
+\thispagestyle{empty}
 
-\newpage
+\noindent
+\makebox[\textwidth][c]{%
+  \includegraphics[
+    width=\paperwidth,
+  ]{krydsord2-Spørgsmål.png}%
+}
+
+\clearpage
 
 
 \section*{Reklamer}
@@ -1427,5 +1457,163 @@ HVAD ER DIN UNDSKYLDNING?}
     clip
   ]{artikel.pdf}
 \end{center}
+
+\clearpage
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+\begin{tcolorbox}[
+  enhanced,
+  width=\textwidth,
+  height=0.92\textheight,
+  valign=center,
+  colback=black!2,
+  colframe=Maroon!90!black,
+  boxrule=1.8pt,
+  borderline={0.7pt}{4pt}{Goldenrod!80!black},
+  sharp corners,
+  boxsep=3mm,
+  left=8mm,
+  right=8mm,
+  top=8mm,
+  bottom=8mm,
+  overlay={
+    % Indvendig guldramme
+    \draw[
+      Goldenrod!75!black,
+      line width=0.7pt
+    ]
+      ([xshift=6mm,yshift=-6mm]frame.north west)
+      rectangle
+      ([xshift=-6mm,yshift=6mm]frame.south east);
+
+    % Øverste venstre hjørne
+    \draw[
+      Goldenrod!85!black,
+      line width=1.5pt
+    ]
+      ([xshift=9mm,yshift=-9mm]frame.north west)
+      -- ++(22mm,0)
+      -- ++(0,-8mm);
+
+    % Øverste højre hjørne
+    \draw[
+      Goldenrod!85!black,
+      line width=1.5pt
+    ]
+      ([xshift=-9mm,yshift=-9mm]frame.north east)
+      -- ++(-22mm,0)
+      -- ++(0,-8mm);
+
+    % Nederste venstre hjørne
+    \draw[
+      Goldenrod!85!black,
+      line width=1.5pt
+    ]
+      ([xshift=9mm,yshift=9mm]frame.south west)
+      -- ++(22mm,0)
+      -- ++(0,8mm);
+
+    % Nederste højre hjørne
+    \draw[
+      Goldenrod!85!black,
+      line width=1.5pt
+    ]
+      ([xshift=-9mm,yshift=9mm]frame.south east)
+      -- ++(-22mm,0)
+      -- ++(0,8mm);
+
+    % Små dekorative diamanter
+    \node[
+      diamond,
+      fill=Maroon!90!black,
+      draw=Goldenrod!80!black,
+      line width=0.8pt,
+      minimum size=5mm
+    ] at ([yshift=-6mm]frame.north) {};
+
+    \node[
+      diamond,
+      fill=Maroon!90!black,
+      draw=Goldenrod!80!black,
+      line width=0.8pt,
+      minimum size=5mm
+    ] at ([yshift=6mm]frame.south) {};
+  }
+]
+
+\begin{center}
+
+{\sffamily\bfseries\small\color{Maroon!90!black}
+DEN RULLENDE STEN PRÆSENTERER}
+
+\vspace{0.5em}
+
+
+\vspace{2.8em}
+
+{\sffamily\bfseries\fontsize{18}{20}\selectfont
+\color{black!75}
+EN SÆRLIG TAK TIL}
+
+\vspace{0.25em}
+
+{\sffamily\bfseries\fontsize{34}{37}\selectfont
+\color{Maroon!90!black}
+FAMILIEN VINTERKRONE}
+
+\vspace{0.5em}
+
+{\color{Goldenrod!80!black}
+\rule{0.82\linewidth}{2pt}}
+
+\vspace{1.3em}
+
+\includegraphics[
+  width=0.80\linewidth,
+  keepaspectratio
+]{vinterkroneSkjold.png}
+
+\vspace{1.3em}
+
+\begin{tcolorbox}[
+  width=0.84\linewidth,
+  colback=Maroon!90!black,
+  colframe=Goldenrod!80!black,
+  boxrule=1.2pt,
+  sharp corners,
+  left=6mm,
+  right=6mm,
+  top=4mm,
+  bottom=4mm
+]
+\centering
+
+{\sffamily\bfseries\large\color{white}
+Vi takker Familien Vinterkrone}
+
+\vspace{0.25em}
+
+{\sffamily\itshape\normalsize\color{white}
+for deres støtte til avisen og deres bidrag til,
+at sandheden fortsat kan blive trykt.}
+
+\end{tcolorbox}
+
+\vspace{1.1em}
+
+\vspace{1.95em}
+
+{\sffamily\bfseries\small\color{black!65}
+MED TAK FRA REDAKTIONEN PÅ DEN RULLENDE STEN}
+
+\end{center}
+
+\end{tcolorbox}
+
+\vspace*{\fill}
+
+\clearpage
 
 \end{document} 
