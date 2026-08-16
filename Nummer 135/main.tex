@@ -1,1619 +1,879 @@
-\documentclass[a4paper,12pt]{memoir}
+\documentclass[a5paper,10pt,twoside,openany]{memoir}
+
+% ============================================================
+% A5 BOOKLET PRINTED ON FOLDED A4 SHEETS
+% ============================================================
+% The content is laid out as portrait A5 pages. In print mode,
+% the booklet package places two A5 pages on each landscape A4
+% side and rearranges the page order for folding and stapling.
+%
+% Recommended printer settings:
+%   Paper size: A4
+%   Orientation: Landscape
+%   Duplex: On
+%   Flip/bind: Short edge
+%   Scaling: Actual size / 100 percent
+% ============================================================
 
 \newsavebox{\FrontImgBox}
 \newlength{\FrontClip}
 
-\usepackage{float}
-\usepackage[pdftex]{graphicx}
-\usepackage{eso-pic}
-
-% ====== A4 page layout ======
-\settypeblocksize{*}{150mm}{1.6}
-\setlrmarginsandblock{25mm}{25mm}{*}
-\setulmarginsandblock{25mm}{25mm}{*}
-\checkandfixthelayout
-\usepackage{todonotes}
-\pagestyle{empty} % no page number
-\usepackage[pdftex]{graphicx}
-\usepackage{eso-pic}
-
- \usepackage{microtype} % better justification & protrusion
-\usepackage{newtxtext} % Times-like body text (newspaper vibe)
-\usepackage[scaled]{helvet} % Sans for headlines and decks
+% ====== Fonts and language support ======
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{tikz}
-\usetikzlibrary{decorations.text}
+\usepackage{microtype}
+\usepackage{newtxtext}
+\usepackage[scaled]{helvet}
 
-% ====== Columns & visuals ======
+% ====== Graphics, colour, columns, and boxes ======
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{eso-pic}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{
+  decorations.text,
+  fadings,
+  patterns,
+  shapes.geometric
+}
+
 \usepackage{multicol}
-\setlength{\columnsep}{0.28in}
+\setlength{\columnsep}{5mm}
 \setlength{\columnseprule}{0.2pt}
 
-\usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{caption}
-\captionsetup{font=small,labelfont=bf}
+\captionsetup{
+  font=small,
+  labelfont=bf
+}
+\captionsetup[figure]{
+  labelformat=empty
+}
 
-\usepackage[dvipsnames]{xcolor}
-\usepackage{lettrine} % drop caps
-\usepackage[many]{tcolorbox} % pull quotes / sidebars
-%\usepackage[print,1to1]{booklet} %print option switches to landscape
-%\pagespersignature{16}
+\usepackage{lettrine}
+\usepackage[many]{tcolorbox}
+\usepackage{xparse}
+\usepackage{contour}
 \usepackage{pgfplots}
-\pgfplotsset{width=10cm,compat=1.9}
+\pgfplotsset{
+  width=9cm,
+  compat=1.9
+}
+
+\usepackage{ifpdf}
+\usepackage{todonotes}
+
+% ====== True A5 page layout ======
+% A5 is 148.5 mm wide by 210 mm high.
+\settypeblocksize{178mm}{116mm}{*}
+\setlrmarginsandblock{17mm}{15.5mm}{*}
+\setulmarginsandblock{16mm}{16mm}{*}
+\setheadfoot{12pt}{22pt}
+\setheaderspaces{*}{6mm}{*}
+\checkandfixthelayout
+
+\raggedbottom
+
+% ====== Booklet output switch ======
+% Use \bookletprinttrue for a print-ready landscape A4 PDF.
+% Use \bookletprintfalse for a normal sequential portrait A5 PDF.
+\newif\ifbookletprint
+\bookletprinttrue
+
+% The booklet package must be loaded after the memoir page layout.
+\ifbookletprint
+  \usepackage[print,1to1]{booklet}
+  \nofiles
+\else
+  \usepackage[noprint,1to1]{booklet}
+\fi
+
+% Source page: portrait A5.
+% Target sheet: landscape A4.
+\source{\magstep0}{148.5mm}{210mm}
+\target{\magstep0}{297mm}{210mm}
+
+% Each signature contains up to 16 A5 pages.
+% Blank pages are added automatically when required.
+\pagespersignature{16}
+
+\ifpdf
+  \setpdftargetpages
+
+  % memoir resets the PDF page size at begin-document, so set
+  % the physical output size again after memoir has finished.
+  \ifbookletprint
+    \AtBeginDocument{%
+      \pdfpagewidth=297mm
+      \pdfpageheight=210mm
+    }
+  \fi
+\else
+  \setdvipstargetpages
+\fi
+
+% Optional centre-fold guide.
+% Change 0pt to 0.3pt to print a faint folding line.
+\setlength{\pagesepwidth}{0pt}
+\setlength{\pageseplength}{190mm}
+\setlength{\pagesepoffset}{10mm}
 
 \tcbset{
   colback=black!2,
   colframe=black!40,
-  boxsep=4pt, left=6pt, right=6pt, top=6pt, bottom=6pt,
-  sharp corners,
+  boxsep=4pt,
+  left=6pt,
+  right=6pt,
+  top=6pt,
+  bottom=6pt,
+  sharp corners
 }
 
-\usepackage{caption}
-\captionsetup[figure]{labelformat=empty}
-
-% ====== Headings & bylines ======
+% ====== Headings and bylines ======
 \setsecheadstyle{\Large\bfseries\sffamily}
 \setsubsecheadstyle{\normalsize\bfseries\sffamily}
 \setsubsubsecheadstyle{\normalsize\itshape}
 
-\newcommand{\kicker}[1]{\textsf{\bfseries\small\color{Gray} #1}}
-\newcommand{\headline}[1]{\textsf{\bfseries\fontsize{34}{36}\selectfont #1}}
-\newcommand{\deck}[1]{\textsf{\large\itshape #1}}
-\newcommand{\byline}[1]{\textsf{\small\color{Gray} Af #1}}
-\usepackage{tikz}
-\usetikzlibrary{fadings,patterns,shapes.geometric}
+\newcommand{\kicker}[1]{%
+  \textsf{\bfseries\small\color{Gray}#1}%
+}
 
-% Define a generic "fade to transparent" around a rectangle
-\tikzfading[name=image fade,
+\newcommand{\headline}[1]{%
+  \textsf{%
+    \bfseries
+    \fontsize{24}{26}\selectfont
+    #1%
+  }%
+}
+
+\newcommand{\deck}[1]{%
+  \textsf{\normalsize\itshape #1}%
+}
+
+\newcommand{\byline}[1]{%
+  \textsf{\small\color{Gray} Af #1}%
+}
+
+% ====== Image fading ======
+\tikzfading[
+  name=image fade,
   inner color=transparent!50,
-  outer color=transparent!100]
+  outer color=transparent!100
+]
 
-  % Text outline ("border around letters")
-\usepackage{contour} % works with pdfLaTeX/XeLaTeX/LuaLaTeX
-\contourlength{0.9pt}         % default stroke thickness
-\contournumber{32}            % smoothness of the outline
+% ====== Text outline ======
+\contourlength{0.9pt}
+\contournumber{32}
 
-% Helpers: white text with dark outline (and a thinner variant)
-\newcommand{\ow}[2][black]{\contour{#1}{\textcolor{white}{#2}}}
+\newcommand{\ow}[2][black]{%
+  \contour{#1}{\textcolor{white}{#2}}%
+}
+
 \newcommand{\owthin}[2][black]{%
-  \begingroup\contourlength{0.6pt}\contour{#1}{\textcolor{white}{#2}}\endgroup}
+  \begingroup
+  \contourlength{0.6pt}%
+  \contour{#1}{\textcolor{white}{#2}}%
+  \endgroup
+}
 
-% ====== Page banner / folio ======
+% ====== Page banner and folio ======
 \makepagestyle{newspaper}
-\makeoddhead{newspaper}{\textsf{\small Den Rullende Sten}}{}{\textsf{\small Sponsoreret af Det Glemte Akademi}}
-\makeevenhead{newspaper}{\textsf{\small Sponsoreret af Det Glemte Akademi}}{}{\textsf{\small Den Rullende Sten}}
-\makeoddfoot{newspaper}{}{\textsf{\small\thepage}}{}
-\makeevenfoot{newspaper}{}{\textsf{\small\thepage}}{}
+
+\makeoddhead{newspaper}
+  {\textsf{\scriptsize Den Rullende Sten}}
+  {}
+  {\textsf{\scriptsize Sponsoreret af Det Glemte Akademi}}
+
+\makeevenhead{newspaper}
+  {\textsf{\scriptsize Sponsoreret af Det Glemte Akademi}}
+  {}
+  {\textsf{\scriptsize Den Rullende Sten}}
+
+\makeoddfoot{newspaper}
+  {}
+  {\textsf{\scriptsize\thepage}}
+  {}
+
+\makeevenfoot{newspaper}
+  {}
+  {\textsf{\scriptsize\thepage}}
+  {}
+
 \makeheadrule{newspaper}{\textwidth}{0.4pt}
 \pagestyle{newspaper}
 
-% ====== Pull quote and sidebar environments ======
+% ====== Pull quote environment ======
 \newenvironment{pullquote}
-  {\begin{tcolorbox}[enhanced, breakable]\itshape\large}
-  {\end{tcolorbox}}
+  {%
+    \begin{tcolorbox}[
+      enhanced,
+      breakable
+    ]
+    \itshape
+    \large
+  }
+  {%
+    \end{tcolorbox}
+  }
 
-
-\usepackage{xparse}
-\usepackage{wrapfig}
-
-% Justérbare standarder for sidebar i spalter
-\newcounter{sidebarlines}              % hvor mange linjer der skal "wrappe" forbi boksen
+% ====== Sidebar settings ======
+\newcounter{sidebarlines}
 \setcounter{sidebarlines}{14}
 \setlength{\sidebarwidth}{0.42\columnwidth}
 
 \newcommand{\godentry}[5]{%
-% #1 = placering, #2 = titel, #3 = billedfil, #4 = side l/r, #5 = tekst
-\begin{wrapfigure}{#4}{0.24\columnwidth}
-  \vspace{-8pt}
-  \centering
-  \includegraphics[width=0.20\columnwidth]{#3}
-  \vspace{-12pt}
-\end{wrapfigure}
+  % #1 = placering
+  % #2 = titel
+  % #3 = billedfil
+  % #4 = side l/r
+  % #5 = tekst
 
-\subsection*{#1. #2}
-#5
+  \begin{wrapfigure}{#4}{0.24\columnwidth}
+    \vspace{-8pt}
+    \centering
+    \includegraphics[
+      width=0.20\columnwidth
+    ]{#3}
+    \vspace{-12pt}
+  \end{wrapfigure}
 
-\par\medskip
+  \subsection*{#1. #2}
+
+  #5
+
+  \par\medskip
 }
 
 % ====== Utilities ======
 \newcommand{\separator}{%
-  \par\noindent{\color{black!40}\rule{\textwidth}{0.4pt}}\par
+  \par
+  \noindent
+  {\color{black!40}\rule{\textwidth}{0.4pt}}
+  \par
 }
 
+% ====== Front feature image ======
+% Usage:
+% \FrontFeatureImage
+%   {image}
+%   {kicker}
+%   {headline}
+%   {deck}
+%   {credit}
 
-% Front feature image: spans \textwidth, keeps aspect ratio, fades at edges,
-% and overlays outlined text (no boxes).
-% Usage: \FrontFeatureImage{<image>}{<kicker>}{<headline>}{<deck>}{<credit>}
 \newcommand{\FrontFeatureImage}[5]{%
-  % Typeset image at \textwidth just once and measure its height
-  \sbox{\FrontImgBox}{\includegraphics[width=0.94\textwidth]{#1}}%
-  % Total height of the scaled image (height + depth)
-  \dimen0=\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax
-  % Max allowed height
-  \dimen2=.8\textheight
-  % Choose visible height: min(actual, max)
+  % Typeset and measure the image.
+  \sbox{\FrontImgBox}{%
+    \includegraphics[
+      width=0.94\textwidth
+    ]{#1}%
+  }%
+
+  % Total scaled image height.
+  \dimen0=\dimexpr
+    \ht\FrontImgBox+
+    \dp\FrontImgBox
+  \relax
+
+  % Maximum image height on an A5 page.
+  \dimen2=.70\textheight
+
+  % Select the visible height.
   \ifdim\dimen0>\dimen2
     \setlength{\FrontClip}{\dimen2}%
   \else
     \setlength{\FrontClip}{\dimen0}%
   \fi
-  %
+
   \begin{tikzpicture}
-    % Define a "frame" we’ll use for anchors & clipping
-    \coordinate (TL) at (0,0);                       % top-left
-    \coordinate (TR) at (\textwidth,0);              % top-right
-    \coordinate (BL) at (0,-\FrontClip);             % bottom-left (cropped)
-    \coordinate (BR) at (\textwidth,-\FrontClip);    % bottom-right (cropped)
+    % Image frame coordinates.
+    \coordinate (TL) at (0,0);
+    \coordinate (TR) at (\textwidth,0);
+    \coordinate (BL) at (0,-\FrontClip);
+    \coordinate (BR) at (\textwidth,-\FrontClip);
 
-    % Image with soft fading edges, clipped to the frame (crops from the bottom)
+    % Image.
     \begin{scope}
       \clip (TL) rectangle (BR);
-      \node[anchor=north west, inner sep=0pt,
-            path fading=image fade, fit fading=false] at (TL)
-        {\usebox{\FrontImgBox}};
+
+      \node[
+        anchor=north west,
+        inner sep=0pt,
+        path fading=image fade,
+        fit fading=false
+      ] at (TL) {%
+        \usebox{\FrontImgBox}%
+      };
     \end{scope}
 
-    % Dark wash for legibility, also softly faded (match the same clip)
+    % Dark overlay for text legibility.
     \begin{scope}
       \clip (TL) rectangle (BR);
-      \fill[black,opacity=0.30, path fading=image fade] (BL) rectangle (TR);
+
+      \fill[
+        black,
+        opacity=0.30,
+        path fading=image fade
+      ]
+      (BL) rectangle (TR);
     \end{scope}
 
-    % Text stack (bottom-left) — outline style preserved
-    \node[anchor=south west, xshift=1em, yshift=1em, align=left,
-          text width=.75\textwidth] at (BL){%
+    % Headline stack.
+    \node[
+      anchor=south west,
+      xshift=1em,
+      yshift=1em,
+      align=left,
+      text width=.75\textwidth
+    ] at (BL) {%
       \sffamily
-      % Kicker (optional)
-      \if\relax\detokenize{#2}\relax\else
-        {\owthin[black!85]{\textsf{\bfseries\small #2}}}\\[0.15em]\fi
-      % Headline
-      {\ow{\bfseries
-        \resizebox{1\textwidth}{!}{#3}%
-      }}\\[0.2em]
-      % Deck
-      {\owthin{\large\itshape #4}}%
+
+      \if\relax\detokenize{#2}\relax
+      \else
+        {%
+          \owthin[black!85]{%
+            \textsf{\bfseries\small #2}%
+          }%
+        }\\[0.15em]
+      \fi
+
+      {%
+        \ow{%
+          \bfseries
+          \resizebox{\textwidth}{!}{#3}%
+        }%
+      }\\[0.2em]
+
+      {%
+        \owthin{%
+          \large
+          \itshape
+          #4%
+        }%
+      }%
     };
 
-    % Credit (bottom-right), small outline
-    \node[anchor=south east, xshift=-1em, yshift=1em] at (BR)
-      {\sffamily\small \owthin[black!85]{#5}};
+    % Image credit.
+    \node[
+      anchor=south east,
+      xshift=-1em,
+      yshift=1em
+    ] at (BR) {%
+      \sffamily
+      \small
+      \owthin[black!85]{#5}%
+    };
   \end{tikzpicture}%
 }
 
-
+% ====== Information box ======
 \newenvironment{infobox}[1]
-{\begin{tcolorbox}[
-  title=\textsf{\bfseries #1},
-  colback=black!3,
-  colframe=black!65,
-  fonttitle=\small,
-  fontupper=\small,
-  boxsep=4pt,
-  left=5pt,
-  right=5pt,
-  top=5pt,
-  bottom=5pt,
-  sharp corners
-]}
-{\end{tcolorbox}}
+  {%
+    \begin{tcolorbox}[
+      title=\textsf{\bfseries #1},
+      colback=black!3,
+      colframe=black!65,
+      fonttitle=\small,
+      fontupper=\small,
+      boxsep=4pt,
+      left=5pt,
+      right=5pt,
+      top=5pt,
+      bottom=5pt,
+      sharp corners
+    ]
+  }
+  {%
+    \end{tcolorbox}
+  }
 
 \newcommand{\paragraf}[1]{%
-  \par\medskip
-  \noindent\textbf{\S#1:}%
+  \par
+  \medskip
+  \noindent
+  \textbf{\S#1:}%
 }
- 
-
-
 
 \begin{document}
-%\pdfpageheight=\paperwidth
-%\pdfpagewidth=\paperheight
-%\paperwidth=\pdfpagewidth
-%\paperheight=\pdfpageheight 
-% ====== Nameplate ======
-\begin{figure}
-  \begin{center}
-      \includegraphics[width=0.98\textwidth]{Logo.png}%
-  \end{center}    
-\end{figure}
+
+% ============================================================
+% FRONT PAGE
+% ============================================================
+
+\begin{center}
+  \includegraphics[
+    width=0.98\textwidth
+  ]{Logo.png}
+\end{center}
+
 \begin{center}
   {\Large\sffamily Udgave 135}
 \end{center}
 
-
-% Front feature image (keeps aspect ratio, spans \textwidth)
-\FrontFeatureImage{Forside.png}
-{Artefakter dukker op i A'kastin!}
-{Ser vi en ny guds fødsel?}
-{Imperiet påråber sig første ret.}
-{}
+\FrontFeatureImage
+  {SølvRavnen.png}
+  {To nye guder dukker op}
+  {Hvem er Sølvravnen og Den Grå Fyrste?}
+  {"Har vi ophøjet to noble?"}
+  {}
 
 \vspace{.75\baselineskip}
-\newpage  
+
+\newpage
 
 % ====== Lead story ======
 \par\medskip
-\headline{KAN A'KASTIN SKABE EN NY GUD?}
+\headline{TO GUDINDER DØDE\\ TO NYE GUDER REJSTE SIG}
 \par\medskip
-\deck{Mystiske artefakter dukker op efter Esselaias og Morwens død}
+\deck{Gudestenene krævede deres pris, mens mere end tyve ritualer ændrede gudernes sfærer.}
 \par\medskip
 \byline{Redaktionen}
 \medskip
 
-\begin{wrapfigure}[24]{r}{0.43\columnwidth}
-  \vspace{4pt}
-  \begin{infobox}{HVAD VED VI?}
-  Det Glemte Akademi mener, at de mystiske genstande repræsenterer grundlæggende kræfter i verden.
-
-  \par\smallskip
-
-  Akademiet har foreløbigt identificeret forbindelser til blandt andet:
-
-  \begin{itemize}
-    \setlength{\itemsep}{0.15em}
-    \item Alkohol
-    \item Drager
-    \item Død
-    \item Held
-    \item Liv
-    \item Lærdom
-    \item Musik
-    \item Måne/Sol
-    \item Natur
-    \item Sfærerne
-    \item Skatter
-    \item Skæbne
-    \item Strategi
-    \item Sygdom
-    \item Søvn
-    \item Tid
-    \item Ødelæggelse
-  \end{itemize}
-  \end{infobox}
+\begin{wrapfigure}[20]{r}{0.43\columnwidth}
+\vspace{4pt}
+\begin{infobox}{DET VED VI}
+\begin{itemize}
+\setlength{\itemsep}{0.25em}
+\item Esselaia og Morwen er døde.
+\item Morwen er blevet fuldstændigt udslettet.
+\item Esselaias død menes at skabe Krigens Ærkedæmon.
+\item Celina Coco er ophøjet som Sølvravnen.
+\item Den Grå Fyrste er ophøjet som civilisationens og den sande adels gud.
+\end{itemize}
+\end{infobox}
 \end{wrapfigure}
 
-\lettrine[lines=2,lhang=0.1,loversize=0.05]{D}{e} første rygter lød som sædvanlig overtro. Et timeglas, der fik et helt herberg til at falde i søvn. En mønt skabt af det første guld.
+\lettrine[lines=2,lhang=0.1,loversize=0.05]{K}{alish}
+har mistet to gudinder og fået to nye guder, men hvem er de og hvad førte til disse ukendte enheder blev ophøjet.
 
-Men da lignende beretninger begyndte at strømme ind fra hele A'kastin, blev det vanskeligt at afvise dem som tilfældigheder.
+Begivenhederne begyndte ved Kaostræet for godt et år siden, hvor sortelvere ofrede fem væsner fra hver race og vandede træets rødder med deres blod. De håbede efter sigende at få del i træets magt.
 
-\par\medskip
+I stedet blev gamle kræfter i A'kastin vækket.
 
-Siden Esselaia og Morwen blev dræbt, har gamle genstande med forbindelse til gudernes domæner vist sig rundt omkring i A'kastin. Flere af dem har været forsvundet i århundreder. Andre blev indtil for nylig betragtet som sagn eller værdiløst arvegods.
+På gudernes helliggrunde voksede de såkaldte Gudesten frem. Hver sten var forbundet til en gud, og kunne bruges til at påkalde den sagn-omspundende overguds magt til at dræbe en gud.
 
-Nu synes de alle at søge mod A'kastin.
+Oldstenene, som gudestenene også er kendt, var tidligere blevet brugt mod Daikia. Deres virkning var derfor kendt: Når stenene aktiveres, vil mindst én gud dø.
 
+\subsection*{To gudinder rammes}
 
+Nogle af stenene blev rettet mod Morwen, mens andre blev rettet mod Esselaia.
 
-Det Glemte Akademi har undersøgt flere af beretningerne og betegner nu genstandene som domæneartefakter. Ifølge Akademiets forskere er hver genstand knyttet til et bestemt begreb som en gud kan have magt over.
+En tempelkriger i Morwens tjeneste valgte at rette sin sten mod Esselaia. Han håbede, at en ligelig fordeling ville gøre de to gudinder i stand til sammen at modstå stenenes kraft.
 
-Det forsvundne drageæg fra Salezstads zoologiske have menes eksempelvis at være knyttet til dragerne. Kong Marcus' krone forbindes med strategi og lederskab, mens den pil, der engang blev brugt til at dræbe den genopståede konge, siges at bære selve Skæbnens kraft.
+Det skete ikke, især da Morwen ikke var en sand gud, men en Ærkedæmon i forklædning.
+
+Da gudinderne døde, forsvandt solen. Naturen skreg, tiden føltes forkert, og økonomien mistede den guddommelige orden, der hidtil havde understøttet den.
+
+Morwen efterlod intet. Da hun allerede havde været en ærkedæmon før sin ophøjelse, kunne den normale forvandling ikke gentage sig. Hun blev i stedet fuldstændigt udslettet.
+
+Esselaias skæbne er anderledes.
+
+Inkvisitionen har ikke bekræftet noget, men tidligere undersøgelser i denne avis har beskrevet, hvordan en død gud kan blive til en ærkedæmon for det modsatte af sit vigtigste princip.
+
+Esselaia var først og fremmest fredens gudinde.
+
+Det, der følger efter hende, kendes derfor som \textbf{Krigens Ærkedæmon}.
+
+\subsection*{Kampen om gudernes pladser}
+
+Efter gudindernes død begyndte ophøjelsesritualerne.
+
+På tre ritualpladser rundt omkring i A'kastin blev der gennemført mere end tyve mindre ritualer. Gamle artefakter kunne her binde guddommelige domæner til kandidaterne.
+
+Mere end syv personer forsøgte at samle støtte.
+
+Kong Dorian Vinterkrone støttede kandidater, der kunne gavne A'kastin og hans styre. Kejserinden ankom med egne ambitioner, mens både Elaith og efter sigende Hrothgar ligeledes forsøgte at gøre krav på guddommelig magt.
+
+Da ritualerne sluttede, var det dog to helt andre skikkelser, der stod tilbage.
+
+\subsection*{Sølvravnen rejser sig}
+
+Den første var Celina Coco, bedre kendt som Sølvravnen.
+
+Celina var leder af en gruppe dusørjægere og blev kendt for sin evne til at opspore Sølvfjend. Trods en næsten legendarisk gæld brugte hun sine penge på sit folk, særligt på musik, fornøjelser og hjælp til dem omkring sig.
+
+Efter Esselaias død valgte dragerne at stille sig bag hende.
+
+Celina blev ophøjet med \textbf{Omsorg} som sit overordnede princip og med domænerne \textbf{Musik}, \textbf{Drager} og \textbf{Natur}.
 
 \begin{pullquote}
-``Med den mængde tid, energi og ressourcer vi brugte på at skabe den pil er det klart at den burde repræsenterer skæbnen, eller i det mindste økonomisk undergang.''
-
-\par\smallskip
-\raggedleft
-- Kelllwan Præst Ejvind Svendsen, original skaber af pilen.
+``Rigdom har kun værdi, når den skaber glæde for andre.''
+- Celina Coco
 \end{pullquote}
 
-Blandt de øvrige genstande nævnes et timeglas fyldt med Nattens Sand, Verdens Horn, en mønt skabt af det første guld, der nogensinde blev gravet op, og et kompliceret diagram over sfærerne, som ingen endnu har været i stand til at forstå.
+Sølvravnen står dermed som arvtager til flere af de områder, der blev efterladt tomme efter Esselaia.
 
-Akademiet understreger, at flere af disse genstande endnu ikke er blevet fundet. Det har ikke forhindret skattejægere, præster, handelsfolk og selvudnævnte helte i at lede efter dem.
+\subsection*{Den Grå Fyrste rejser sig}
 
-\subsection*{Tre genstande og én dødelig}
+Den anden ophøjelse fik et langt mere uventet udfald.
 
-Den mest opsigtsvækkende teori kommer fra et beskadiget skrift, som blev fundet i Akademiets arkiver kort efter gudindernes død.
+Sortelvernes dronning forsøgte at tage den sidste guddommelige plads, men under det afsluttende ritual blev hun stukket ned af Den Grå Fyrste, som selv forsøgte at træde ind i hendes sted.
 
-Skriftet beskriver et ritual, hvor tre domæner kan bindes til én dødelig sjæl. Hvis ritualet lykkes, vil den udvalgte ophøjes til en ny gud.
+Med ham fulgte Lucius Krellenius.
 
-Præcis hvordan ritualet udføres, fremgår ikke tydeligt. Flere sider mangler, og enkelte af de bevarede instruktioner modsiger hinanden.
+Lucius havde gennem længere tid båret Den Grå Fyrstes kranie og lyttet til den gamle nekromantikers hvisken. Som fjerde søn af en gammel adelsslægt havde Lucius dog udviklet en helt anden forståelse af magt: Adel var for ham ansvar, værdighed og det eftermæle, man efterlader.
 
-Én sætning kan dog stadig læses:
+Da Den Grå Fyrste under ophøjelsen gav efter for sin gamle hunger efter magt og brutalitet, greb Lucius ind.
+
+Han lod sig opsluge af Fyrsten og fyldte samtidig den guddommelige kraft med sine egne idealer.
+
+Det ændrede den skikkelse, der rejste sig.
+
+Den nye Grå Fyrste ønskede ikke længere at herske over de døde. I stedet vendte hans blik sig mod de dødelige: deres historier, deres samfund og det, de formår at bygge og efterlade.
+
+Den Grå Fyrste er derfor blevet gud for \textbf{Civilisation}, \textbf{Strategi}, \textbf{Adel} og \textbf{Døden}.
 
 \begin{pullquote}
-``Når tre dele af verden samles under én vilje, må den dødelige dø, så guden kan rejse sig.''
+``Skab dig et eftermæle, noget der overlever dig. Den enkelte dør, men værker består.''
+- Den Grå Fyrste
 \end{pullquote}
 
-Det har naturligvis skabt en vis bekymring.
+\subsection*{En ny guddommelig orden}
 
-Hvis teksten taler sandt, kan enhver person, som samler tre af artefakterne, muligvis forsøge at ophøje sig selv eller en anden. Det er endnu uvist, om kandidaten skal melde sig frivilligt.
+Kalish står derfor tilbage med to nye guder, der næppe kunne være mere forskellige.
 
-\subsection*{Hvem skal arve de døde gudinder?}
+Sølvravnen lærer sine tilbedere at passe på deres folk, dele deres rigdom og lade musik og natur skabe glæde.
 
-Esselaias og Morwens død har efterladt flere guddommelige ansvarsområder uden en tydelig beskytter.
+Den Grå Fyrste lærer dem at bygge noget, der varer længere end deres eget liv, og at forstå magt som ansvar.
 
-Dragerne har mistet deres dronning. Naturen mangler sin vogter. De døde venter uden at blive dømt, og ingen ved længere, hvem der holder Tidens nål eller fører Skæbnens tråd.
+Men sejren har haft en pris.
 
-Nogle præster mener, at verden selv har frembragt artefakterne for at finde en efterfølger. Andre mener, at en ukendt magt har samlet dem i A'kastin med et bestemt formål.
+Morwen findes ikke længere.
 
-En tredje og mere bekymrende teori siger, at artefakterne ikke søger efter den bedste kandidat.
+Esselaia er død.
 
-De søger blot efter den første, der er villig.
+Og hvis undersøgelserne af hendes skæbne er korrekte, er fredens tidligere gudinde nu ved at blive til noget, som Kalish endnu ikke har mødt:
 
-\subsection*{Kampen er allerede begyndt}
-
-Kelllwan Kirken har erklæret, at ingen ophøjelse kan være lovlig uden guddommelig og kejserlig godkendelse. Ewens præster kræver, at alle artefakter udleveres til forskning, indtil deres funktion kan dokumenteres på forsvarlig vis.
-
-Handelskompagniet har meddelt, at domæneartefakterne næppe har nogen reel værdi, men at kompagniet af hensyn til offentlighedens sikkerhed gerne opkøber dem til en rimelig pris.
-
-Samtidig cirkulerer der rygter om, at flere grupper allerede er i bessidelse af flere af disse artefakter.
-
-Ingen har endnu offentligt erklæret, at de ønsker at blive gud.
+Krigens Ærkedæmon.
 
 \separator
 
 \par\medskip
 
-\textit{Redaktionen modtager oplysninger om guddommelige artefakter, mystiske genstande og personer. Anonyme henvendelser accepteres. Falske henvendelser accepteres også, men trykkes kun, hvis de er interessante.}
+\textit{Redaktionen modtager oplysninger om Sølvravnens og Den Grå Fyrstes nye præster, templer og varsler. Som altid accepteres anonyme henvendelser.}
 
-\newpage
 
-% ----- Temaoverskrift -----
-\kicker{TEMA: ÆRKEDÆMONERNES ARV}
+% ====== Bekendtgørelse fra Sølvhammerens Orden ======
 
-\par\smallskip
-
-\headline{FREDEN ER DØD\\
-ER KRIGEN BLEVET FØDT?}
-
-\par\medskip
-
-\deck{Esselaias død kan have kastet en ny skygge ind i
-dæmonernes sfære. Morwens død gør derimod måske blot
-en gammel skygge hel igen.}
-
-\par\medskip
-
-\byline{Stefani Ervind, frygtløs eventyrer og reporter}
-
-\medskip
-
-% ----- Ekspertpræsentation -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=Maroon!4,
-  colframe=Maroon!85!black,
-  boxrule=1.2pt,
-  borderline west={4pt}{0pt}{Maroon!85!black},
-  sharp corners,
-  left=5mm,
-  right=5mm,
-  top=3mm,
-  bottom=3mm
-]
-\begin{minipage}{0.22\linewidth}
-\centering
-{\sffamily\bfseries\Large EKSPERTEN}
-\end{minipage}
-\hfill
-\begin{minipage}{0.73\linewidth}
-\small
-\textbf{Johannes Krell}, også kendt som Den Fulde Præst,
-er religionshistoriker, forfatter og tidligere præst for både
-Kelllwan og Ewen. Han har brugt en betydelig del af sit liv
-på at samle oplysninger om guder, deres følgere og dæmonerne.
-\end{minipage}
-\end{tcolorbox}
-
-\vspace{0.5em}
-
-\lettrine[lines=2,lhang=0.1,loversize=0.05]{S}{idst}
-jeg skrev om Esselaia, stod jeg i en bjergdal omgivet af syv
-drager og en gudinde med vinger.
-
-Det var en meget farlig situation, som jeg naturligvis
-håndterede med stor professionalisme, seks dusin vorterod
-og en hurtig flugt tilbage mod civilisationen.
-
-Nu er Esselaia død.
-
-Jeg blev først frarådet at undersøge omstændighederne ved hendes død. Derefter blev
-jeg frarådet at undersøge dæmonernes sfære. Til sidst blev jeg
-frarådet overhovedet at skrive denne artikel.
-
-Derfor opsøgte jeg naturligvis Johannes Krell.
-
-Han indvilligede i at tale med mig på betingelse af, at jeg
-ikke oplyste hans navn. 
-
-% ----- Faktaboks -----
-\begin{tcolorbox}[
-  title={\sffamily\bfseries DE OTTE KENDTE},
-  coltitle=white,
-  colbacktitle=black,
-  colback=black!3,
-  colframe=black,
-  boxrule=0.8pt,
-  sharp corners,
-  fontupper=\small,
-  left=4mm,
-  right=4mm,
-  top=3mm,
-  bottom=3mm
-]
-
-De mest anerkendte dæmonologiske fortegnelser beskriver
-otte ærkedæmoner:
-
-\par\smallskip
-
-\noindent
-\textbf{Hadet}\\
-Herskeren over dæmonernes sfære og den mægtigste blandt
-de kendte ærkedæmoner.
-
-\par\smallskip
-
-\noindent
-\textbf{Grådigheden}\\
-En fortabt dværgegud, hvis begær efter rigdom aldrig kan
-mættes. Dette menes at være Carmenor.
-
-\par\smallskip
-
-\noindent
-\textbf{Natten}\\
-Hersker over hemmeligheder, bedrag, løgne og den stille kniv.
-
-\par\smallskip
-
-\noindent
-\textbf{Jalusien}\\
-En ældgammel magt, der næres af misundelse, begær og
-ønsket om at eje det, andre har.
-
-\par\smallskip
-
-\noindent
-\textbf{Døden}\\
-Den skikkelse Morwen blev forvandlet til, da hendes første
-ophøjelse endte med hendes død. Denne Ærkedæmon er ikke længere aktiv.
-
-\par\smallskip
-
-\noindent
-\textbf{Smerten og vanviddet}\\
-Den fordærvede rest af den faldne gudinde Daikia.
-
-\par\smallskip
-
-\noindent
-\textbf{Kaosset}\\
-Den tidligere naturgud Alman, nu vendt mod civilisation
-gennem naturens ødelæggende kræfter.
-
-\par\smallskip
-
-\noindent
-\textbf{Lyset og retfærdigheden}\\
-Ingen ved om denne ærkedæmon overhovedet findes.
-
-\end{tcolorbox}
-
-\subsection*{Hvad er en ærkedæmon?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Lad os begynde fra starten. Hvad er en ærkedæmon
-egentlig?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-En almindelig dæmon er et væsen fra dæmonernes sfære.
-En ærkedæmon er noget langt værre.
-
-Det er det, der skabes, når en gud dør og trækkes
-ind i Sjælenesmalstrøm. Sjælenesmalstrøm sender guderne til deres egen sfære,
-hvorefter de trækkes ind i Sjælenesmalstrøm igen. På den måde bliver de refineret ned til deres kerne, og når de ikke kan refineres mere spøtter Sjælenesmalstrøm dem ud, og dette reflektere guden, så der opstår en ærkedæmon for det modsatte af hvad guden stod for.
-
-Man kan kalde det gudens mørke efterbillede.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Så alle døde guder bliver til ærkedæmoner?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Ikke nødvendigvis. Døden alene er ikke altid nok. Sjælen skal
-kunne overleve Sjælenesmalstrøm. Dette er nødvendigt for at skabe dette mørke efterbillede.
-
-Carmenors forhold til rigdom blev til grådighed. Almans
-forbindelse til naturen blev til naturens ukontrollerede kaos.
-Daikias storhed blev til smerte og vanvid.
-
-\subsection*{Hvad er Sjælenesmalstrøm?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Du bliver ved med at nævne Sjælenesmalstrøm, som om
-alle ved, hvad det er. Er det en flod? En sfære? Et meget stort
-hul?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Ingen af delene. Eller muligvis alle tre.
-
-Sjælenesmalstrøm er ikke et sted i samme forstand som
-Magiens Sfære, Åndernes Sfære eller en guds eget rige. Den
-har ingen kendt hersker, ingen faste grænser.
-
-Den beskrives bedst som en kraft eller et undeligt hul hvor alt verdens energi flyder mod.
-
-Når en sjæl ikke længere har et sted i den eksisterende orden,
-trækkes den mod Malstrømmen. Her bliver alt det, der udgør
-sjælen, gradvist opløst: erindringer, ønsker, loyaliteter,
-frygt, kærlighed og til sidst selve dens identitet.
-
-For en almindelig dødelig betyder det udslettelse.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Udslettelse som i død?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Værre.
-
-En død sjæl eksisterer stadig. Den kan dømmes, beskyttes,
-sendes til sin gud eller i sjældne tilfælde kaldes tilbage.
-
-En sjæl, der er blevet fuldstændigt opløst i Sjælenesmalstrøm,
-findes ikke længere. Der er intet at hidkalde, intet at helbrede
-og intet navn, som ånderne kan svare på.
-
-\subsubsection*{Hvorfor bliver guderne ikke blot udslettet?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Hvis Malstrømmen udsletter sjæle, hvorfor bliver en død
-gud så til en ærkedæmon i stedet for blot at forsvinde?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Fordi en gud ikke længere kun er en sjæl.
-
-En gud er bundet til tilbedere, dogmer, hellige steder,
-symboler og flere guddommelige domæner. Selv når guden
-dør, fortsætter disse forbindelser med at fastholde dens
-eksistens, som et anker til sin originale sfære. Sjælenesmalstrøm prøver at sortere guden det rigtige sted hen, hvilket er deres egen sfære.
-
-Sjælenesmalstrøm kan derfor ikke udslette en gud på samme
-måde, som den udsletter en dødelig. I stedet bliver guden
-trukket frem og tilbage mellem Malstrømmen og sin egen sfære.
-
-Hver gang bliver endnu overflødig del fjernet. Det menneskelige bliver høvlet væk af Malstrømmen.
-
-Først forsvinder minderne om det dødelige liv. Derefter
-forsvinder personlige følelser, forbindelser og hensigter.
-Til sidst er kun det stærkeste guddommelige princip tilbage.
-
-% ----- Procesboks -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=black!3,
-  colframe=Maroon!85!black,
-  boxrule=1pt,
-  borderline west={3pt}{0pt}{Maroon!85!black},
-  sharp corners,
-  title={\sffamily\bfseries KRELLS MODEL FOR DEN GUDDOMMELIGE OPLØSNING},
-  colbacktitle=Maroon!90!black,
-  coltitle=white,
-  fontupper=\small,
-  left=4mm,
-  right=4mm,
-  top=3mm,
-  bottom=3mm
-]
-
-\begin{enumerate}
-  \setlength{\itemsep}{0.4em}
-
-  \item \textbf{Guden dør.}\\
-  Forbindelsen mellem guden, dens sfære og dens tilbedere
-  bliver ustabil.
-
-  \item \textbf{Sjælen trækkes ind i Malstrømmen.}\\
-  De mindst grundlæggende dele af gudens identitet bliver
-  opløst.
-
-  \item \textbf{Gudens sfære trækker den tilbage.}\\
-  Tilbedelse, symboler og guddommelige forbindelser
-  forhindrer den fuldstændige udslettelse.
-
-  \item \textbf{Processen gentager sig.}\\
-  Guden trækkes frem og tilbage, indtil kun dens stærkeste
-  og mest grundlæggende domæne er tilbage.
-
-  \item \textbf{Kernen spejles.}\\
-  Når intet mere kan fjernes, vender Malstrømmen det
-  tilbageværende princip mod sig selv. Den døde gud
-  genopstår som et dæmonisk efterbillede: en ærkedæmon.
-\end{enumerate}
-
-\end{tcolorbox}
-
-\subsubsection*{Det guddommelige spejl}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Hvad mener De med, at princippet bliver vendt mod sig
-selv?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Sjælenesmalstrøm er en del af verdensordenen. Den er tiltænkt at sortere energi, så som sjæle. Malstrømmen møder et koncept der ikke kan nedbrydes, så spøttes dette subject ud, men i omvendt rækkefølge, hvilket betyder at subjektet effektivt bliver spejlet.
-
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Så inde i Malstrømmen bliver en død gud sendt tilbage til
-sin sfære igen og igen, indtil der ikke er andet end deres domæne
-tilbage?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Det er teorien.
-
-Man kan se det lidt som hvis man kastede en tung sten i en almindelig malstrøm. Hvis stenen er tung nok, til et punkt hvor malstrømmen ikke kan røre den, da vil den blive spyttet ud for enden af malstrømmen.
-
-% ----- Kort advarselsboks -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=Goldenrod!8,
-  colframe=Goldenrod!70!black,
-  boxrule=0.8pt,
-  sharp corners,
-  title={\sffamily\bfseries IKKE DET SAMME SOM ÅNDERNES SFÆRE},
-  colbacktitle=Goldenrod!70!black,
-  coltitle=black,
-  fontupper=\small
-]
-Åndernes Sfære er et opholdssted for sjæle, som endnu ikke
-er blevet dømt eller ført videre.
-
-Sjælenesmalstrøm er derimod den endelige opløsning af en
-sjæl, som ikke længere har en plads i verdens orden.
-
-\end{tcolorbox}
-
-
-\subsection*{Hvorfor skaber Morwen ikke en ny ærkedæmon?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Både Morwen og Esselaia blev dræbt. Betyder det,
-at vi får to nye ærkedæmoner?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Nej.
-
-Morwen havde allerede gennemgået forvandlingen.
-
-Da Alman forsøgte at ophøje hende, blev hun dræbt i samme
-øjeblik, og hun blev Dødens Ærkedæmon. Hun undslap senere
-dæmonernes sfære og skabte sig en plads blandt guderne.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Hvad sker der så med hende nu?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Det ved vi ikke.
-
-Det er muligt, at hendes gamle dæmoniske natur igen har
-taget over. Det er muligt, at hun er vendt tilbage til den plads,
-hun tidligere forlod. Det er også muligt, at både hendes
-guddommelige og dæmoniske eksistens blev ødelagt ved drabet.
-
-Men hendes død skaber ikke en ny ærkedæmon.
-
-% ----- Morwen-boks -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=black!5,
-  colframe=black!70,
-  boxrule=0.8pt,
-  sharp corners,
-  borderline north={2pt}{0pt}{black},
-  title={\sffamily\bfseries MORWENS MULIGE SKÆBNE},
-  colbacktitle=black!85,
-  coltitle=white,
-  fontupper=\small
-]
-Ifølge Johannes Krell findes der tre sandsynlige muligheder:
-
-\begin{itemize}
-  \setlength{\itemsep}{0.3em}
-  \item Morwen er igen blevet Dødens Ærkedæmon.
-  \item Morwens sjæl er fanget mellem sin guddommelige og
-        dæmoniske natur.
-  \item Morwen er blevet endeligt udslettet.
-\end{itemize}
-
-Ingen af mulighederne indebærer skabelsen af en helt ny
-ærkedæmon.
-\end{tcolorbox}
-
-\subsection*{Hvad med Esselaia?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Så kommer vi til Esselaia. Var hun også en skjult
-ærkedæmon?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Nej. Alt, vi ved om Esselaias ophøjelse, tyder på, at hun
-blev gudinde uden først at blive ført gennem dæmonernes
-sfære.
-
-Det gør hendes død langt farligere.
-
-Hun har nu mulighed for at gennemgå den forvandling, Morwen
-allerede havde gennemlevet.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Hvilken slags ærkedæmon bliver fredens gudinde så?
-Naturens? Dragernes? En særlig stor reptil?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Sandsynligvis ingen af delene.
-
-Esselaias stærkeste guddommelige princip var ikke dragerne. Det var freden.
-
-Hvis dette princip bliver brudt ned og fordrejet i Sjælenesmalstrøm, er det mest sandsynlige resultat være en Ærkedæmon for krig.
-
-\subsection*{Krig er ikke det samme som had}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Vi har allerede Hadets Ærkedæmon. Er krig ikke
-bare had med uniform på?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Nej. Man kan føre krig uden personligt at hade sin fjende.
-
-Had ønsker, at noget skal lide.
-
-Krig ønsker, at noget skal besejres.
-
-Had er personligt. Krig kan være administrativ. Den kan
-organiseres, finansieres og retfærdiggøres af folk, som aldrig
-selv ser slagmarken.
-
-Krigens Ærkedæmon vil ikke blot gøre folk vrede. Den vil
-gøre krig logisk, nødvendig og til sidst uundgåeligt.
-
-\subsection*{Er den allerede blevet født?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Findes Krigens Ærkedæmon allerede?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Muligvis.
-
-Tid bevæger sig ikke ens i alle sfærer. For os kan Esselaia
-have været død i få dage. I Sjælenesmalstrøm kan hendes
-forvandling have varet i årtusinder.
-
-Eller den er endnu ikke begyndt.
-
-Det er også muligt, at hendes sjæl endnu kæmper imod. Men den vil uden tvivl tabe. Det eneste jeg har set modstå denne transformation er Lysets og Retfærdighedens Dæmon.
-
-% ----- Tegn-boks -----
-
-% ----- Tegn-boks -----
-% ----- Tegn-boks -----
-
-
-
-\subsection*{Kan en ny ærkedæmon standses?}
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Lad os antage, at Esselaia er ved at blive til Krigens
-Ærkedæmon. Hvordan stopper vi hende?}
-
-\par\smallskip
-\begin{wrapfigure}[14]{r}{0.46\textwidth}
-  \vspace{-0.8\baselineskip}
-
-  \begin{tcolorbox}[
-    enhanced,
-    width=\linewidth,
-    colback=Goldenrod!8,
-    colframe=Maroon!90!black,
-    boxrule=1pt,
-    borderline={0.5pt}{2pt}{Goldenrod!80!black},
-    sharp corners,
-    boxsep=2mm,
-    left=3mm,
-    right=3mm,
-    top=2.5mm,
-    bottom=2.5mm,
-    title={TEGN PÅ AT KRIGEN VÅGNER},
-    fonttitle=\sffamily\bfseries\small,
-    colbacktitle=Maroon!90!black,
-    coltitle=white,
-    fontupper=\small,
-    before skip=0pt,
-    after skip=0pt
-  ]
-
-  \centering
-
-  Ser du dette symbol, kan det være et tegn på, at
-  Krigens Ærkedæmon er vågnet.
-
-  \par\smallskip
-
-  \includegraphics[
-    width=0.82\linewidth,
-    keepaspectratio
-  ]{Krigens Dæmon.png}
-
-  \end{tcolorbox}
-
-  \vspace{-0.5\baselineskip}
-\end{wrapfigure}
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Det første er at lade være med at tilbede hende.
-
-En ny ærkedæmon har brug for et navn, en identitet og
-følgere, som giver dens domæne betydning. Hvis folk
-begynder at føre krig i dens navn, ofre våben til den eller
-male dens symbol på deres faner, vil de hjælpe den med at
-finde sin plads.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Så vi bør ikke trykke information om den i avisen?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Nej.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Det var uheldigt.}
-
-\subsection*{En tom plads ved dommen}
-
-Esselaias død betyder mere end risikoen for en ny ærkedæmon.
-
-Sammen med Morwen dømte hun de dødes sjæle. Morwen så
-det onde i dem, mens Esselaia så det gode. Skæbnens tråd og
-Tidens nål blev brugt sammen, før Sjælenes Spejl viste den
-dødes sande væsen.
-
-Nu er begge dommere væk.
-
-Hvis Johannes Krell har ret, står Kalish derfor ikke kun overfor en ny dæmonisk magt. De døde har samtidig mistet de
-væsener, der skulle behandle, beskytte og dømme deres sjæle.
-
-\par\medskip
-
-\noindent
-{\sffamily\bfseries\color{Maroon!90!black} STEFANI:}
-\textit{Hvad sker der med de døde nu?}
-
-\par\smallskip
-
-\noindent
-{\sffamily\bfseries KRELL:}
-Det er det spørgsmål. Det forventes dog at alle guder har en interesse i at skabe en ny gud til at hjælpe mod Sjælenesmalstrøm, da de ellers ender i åndernes sfære.
-
-\par\medskip
-
-Jeg takkede Johannes Krell for hans tid og spurgte til sidst,
-om det ville være forsvarligt for mig personligt at undersøge
-dæmonernes sfære.
-
-Han sagde nej.
-
-Jeg har derfor pakket proviant til tre uger, en sølvkniv,
-fire hellige symboler og det sidste af min vorterod.
-
-Næste uge håber jeg at kunne bringe et eksklusivt interview
-med Krigens Ærkedæmon.
-
-Såfremt den findes.
-
-Og såfremt den vil tale med pressen.
-
-
-
-\newpage
-\section*{Muntre Indslag}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.90\textwidth]{thorvalds_blaererovs_vise_noder_og_akkorder}
-\end{figure}
-
-Tekst og Musik: Christian Colberg
-
-\begin{multicols}{2}
-\raggedcolumns
-
-\noindent Mit navn det er Thorvald og jeg er kriger\\
-Nu skal i høre om min færd\\
-Jeg drog af sted fra min landsby Brotland\\
-Ud for at vise mit sande værd\\
-Min rejse var lang og fyldt med fare\\
-Som ingen anden vil´ kunne klare\\
-\\
-Sikke noget blær, sikke noget blær\\
-Dyp ham i tjære og rul ham i fjer\\
-Sikke noget blær, sikke noget blær\\
-Dyp ham i tjære og rul ham i fjer\\
-\\
-Jeg drog mod nord på min mægtige ganger\\
-Og kom snart til kæmpernes store slot\\
-Der smadre jeg porten og banked´ dem alle\\
-Og blev derfor udnævnt til kæmpernes drot\\
-Men konge jobbet var ikke mig\\
-Så jeg fanged´ en bjørn og red min vej\\
-\\
-Sikke noget blær…\\
-\\
-Jeg drog mod syd for at finde solen\\
-Og travede hen over ørknens sand\\
-Hvad så jeg der komme i det fjerne\\
-En hær af vampyrer, mindst 1000 mand\\
-Godt jeg havde et stort hvidløg\\
-og vampyrerne gik alle op i røg\\
-\\
-Sikke noget blær…\\
-\\
-Min bjørn den døde der i syden\\
-Så vest over gik jeg nu til fods\\
-Der blev jeg fanget af 700 trolde\\
-der alle ville banke mig til blods\\
-Men så meget som en skræmme fik jeg ikke\\
-For jeg sparkede dem i deres store pi..!\\
-MAVER!\\
-\\
-Sikke noget blær…\\
-\\
-Så tog jeg til havet og svømmede over\\
-Langt mod øst lå en kæmpe strand\\
-Der så jeg en krabbe på 10.000 kg\\
-Liggende der imellem mig og land\\
-Men krabben den blev nu aldrig min død\\
-Og til middag der spiste jeg krabbens kød\\
-\\
-Sikke noget blær…\\
-\\
-I nord, i syd, i øst og vesten\\
-Der regnes jeg for en mægtig mand\\
-Min titel vil nu og for altid være:\\
-Den største kriger i dette land\\
-Og skulle min sang være løgn og blær\\
-Så dyp mig i tjære og rul mig i fjer\\
-\\
-Sikke noget blær…\\
-Sikke noget blær…\\
-
-\end{multicols}
-
-\clearpage
-\thispagestyle{empty}
-
-\noindent
-\makebox[\textwidth][c]{%
-  \includegraphics[
-    width=\paperwidth,
-  ]{krydsord2-Blank.png}%
-}
-
-\clearpage
-\thispagestyle{empty}
-
-\noindent
-\makebox[\textwidth][c]{%
-  \includegraphics[
-    width=\paperwidth,
-  ]{krydsord2-Spørgsmål.png}%
-}
-
-\clearpage
-
-
-\section*{Reklamer}
-\subsection*{BRING JERN! OG SULFUR!}
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{PIFPAF.png}
-\end{figure}
-VI BRUG FOR SULFUR OG JERN TIL SPRINGE EVLER OP! DU BRING OS 5 JERN OG 5 SULFUR OG VI GIVE DIG SPECIEL PREMIE! DET VÆRE BOMBE I BREV! 
-- PIF OG PAF!
-
-\begin{center}
-\fbox{
-\begin{minipage}{0.9\linewidth}
-
-\begin{center}
-{\Large \textbf{KELLLWAN KIRKEN KALDER}}\\
-\medskip
-{\large \textit{Sydporten skal genopbygges}}
-\end{center}
-
-\par\medskip
-
-Efter år med fejlslagne forsøg er arbejdet ved Sydporten nu begyndt under Kelllwan Kirkens ledelse. Men sten rejser sig ikke alene, og dæmonerne fra Letho venter ikke tålmodigt.
-
-\par\medskip
-
-Kirken søger derfor arbejdere, minefolk, eventyrere og ærlige borgere til indsamling af materialer til rigets forsvar.
-
-\par\medskip
-
-\begin{center}
-\textbf{BETALING UDBETALES DIREKTE AF KELLLWAN KIRKEN}
-\end{center}
-
-\begin{center}
-\Huge
-10 Fjend for Jern\\
-20 Fjend for Mitril
-\end{center}
-
-\par\medskip
-
-Materialer afleveres ved Kelllwan Kirkens lejre nær Sydporten.
-
-\par\medskip
-
-Kun gennem handling sikres Kalish mod Lethos rædsler.
-
-
-\end{minipage}
-}
-\end{center}
-% ====== Handelskompagniets Kongetand-reklame ======
 \begin{center}
 \begin{tcolorbox}[
   enhanced,
   width=0.94\textwidth,
-  colback=Goldenrod!7,
-  colframe=Maroon!90!black,
-  boxrule=1.6pt,
-  borderline={0.6pt}{3pt}{Goldenrod!80!black},
+  colback=black!2,
+  colframe=black!85,
+  boxrule=1.4pt,
+  breakable,
+  borderline={0.7pt}{3pt}{Goldenrod!70!black},
   sharp corners,
   boxsep=2mm,
-  left=6mm,
-  right=6mm,
+  left=7mm,
+  right=7mm,
   top=5mm,
   bottom=5mm,
   overlay={
     % Dekorative hjørner
-    \draw[Goldenrod!80!black,line width=1.3pt]
+    \draw[Goldenrod!75!black,line width=1.2pt]
       ([xshift=2mm,yshift=-2mm]frame.north west)
       -- ++(14mm,0) -- ++(0,-7mm);
 
-    \draw[Goldenrod!80!black,line width=1.3pt]
+    \draw[Goldenrod!75!black,line width=1.2pt]
       ([xshift=-2mm,yshift=-2mm]frame.north east)
       -- ++(-14mm,0) -- ++(0,-7mm);
 
-    \draw[Goldenrod!80!black,line width=1.3pt]
+    \draw[Goldenrod!75!black,line width=1.2pt]
       ([xshift=2mm,yshift=2mm]frame.south west)
       -- ++(14mm,0) -- ++(0,7mm);
 
-    \draw[Goldenrod!80!black,line width=1.3pt]
+    \draw[Goldenrod!75!black,line width=1.2pt]
       ([xshift=-2mm,yshift=2mm]frame.south east)
       -- ++(-14mm,0) -- ++(0,7mm);
-
-    % Lille segl øverst
-    \node[
-      circle,
-      fill=Maroon!90!black,
-      draw=Goldenrod,
-      line width=1pt,
-      minimum size=12mm,
-      text=white,
-      font=\sffamily\bfseries\scriptsize
-    ] at ([yshift=-7mm]frame.north east) {HKG};
   }
 ]
 
-% ----- Overskrift -----
 \begin{center}
-{\sffamily\bfseries\small\color{Maroon!90!black}
-EN ENESTÅENDE MULIGHED FRA HANDELSKOMPAGNIET}
+
+{\sffamily\bfseries\small\color{black!65}
+OFFICIEL BEKENDTGØRELSE}
 
 \vspace{0.25em}
 
 {\sffamily\bfseries\fontsize{27}{29}\selectfont
-\color{Maroon!90!black}
-Bliv rig uden at arbejde!}
+SØLVHAMMERENS ORDEN}
 
-\vspace{0.3em}
+\vspace{0.2em}
 
-{\color{Goldenrod!80!black}\rule{0.78\linewidth}{1.2pt}}
-\end{center}
-
-\vspace{0.5em}
-
-Handelskompagniet giver dig en \textbf{eksklusiv mulighed} for at blive rig uden at løfte en finger!
-
-\vspace{0.7em}
-
-% ----- Hovedløftet -----
-\begin{center}
-\begin{tcolorbox}[
-  width=0.82\linewidth,
-  colback=Maroon!90!black,
-  colframe=Goldenrod!80!black,
-  boxrule=1.2pt,
-  sharp corners,
-  left=3mm,
-  right=3mm,
-  top=2.5mm,
-  bottom=2.5mm
-]
-\centering
-{\sffamily\bfseries\fontsize{21}{23}\selectfont\color{white}
-Tjen op til \textbf{500 Fjend per dag}!}
-\end{tcolorbox}
-\end{center}
-
-\vspace{0.3em}
-
-Alt du skal gøre, er at samle \textbf{Kongetand}! Handelskompagniet opkøber i øjeblikket alle de kongetand, vi kan få fat i.
-
-\vspace{0.5em}
-
-Når du har bevist, at du kan samle 3 kongetand, får du \textbf{eksklusive rettigheder} til at oprette dit eget indsamlingskompagni!
-
-\vspace{0.7em}
-
-% ----- Trin-for-trin model -----
-\begin{tcolorbox}[
-  enhanced,
-  colback=white,
-  colframe=Goldenrod!70!black,
-  boxrule=0.9pt,
-  sharp corners,
-  left=5mm,
-  right=5mm,
-  top=3mm,
-  bottom=3mm,
-  title={\sffamily\bfseries\large Sådan fungerer det:},
-  coltitle=white,
-  colbacktitle=Maroon!90!black,
-  fonttitle=\sffamily\bfseries
-]
-
-\begingroup
-\renewcommand{\labelitemi}{%
-  \textcolor{Maroon!90!black}{\large\textbullet}%
-}
-\setlength{\itemsep}{0.45em}
-
-\begin{itemize}
-  \item Du samler 3 kongetander.
-  \item Du finder 3 venner, der arbejder under dig.
-  \item Hver af dem samler 3 kongetand til dig. Du har nu 9!
-  \item Når de finder 3 venner hver, får du hele 36 kongetand!
-\end{itemize}
-\endgroup
-
-\end{tcolorbox}
-
-\vspace{0.7em}
-
-% ----- Handelsrate -----
-\begin{center}
-{\sffamily\bfseries\small\color{Maroon!90!black}
-HANDELSKOMPAGNIETS ATRAKTIVE HANDELSRATE}
-
-\vspace{0.25em}
-
-\fcolorbox{Maroon!90!black}{Goldenrod!18}{%
-  \parbox{0.82\linewidth}{%
-    \centering
-    \vspace{0.35em}
-    Med vores atraktive handelsrate tilbyder vi
-    \textbf{\Large 5 HKG}\footnote{Handelskompagni Guld}
-    per kongetand.
-    \vspace{0.35em}
-  }%
-}
-\end{center}
-
-\vspace{0.7em}
-
-Beviser du dit værd, bliver du udpeget til at være den officielle
-\textit{"Viceformand for eksklusiv kongetandsdistribution og indsamling"}.\footnote{Bevis for denne titel koster 5000 HKG eller 50 Fjend.}
-
-\vspace{0.8em}
-
-% ----- Afsluttende opfordring -----
-\begin{center}
-\colorbox{Maroon!90!black}{%
-  \parbox{0.88\linewidth}{%
-    \centering
-    \vspace{0.45em}
-    {\sffamily\bfseries\large\color{white}
-    Kontakt din lokale repræsentant for Handelskompagniet i dag!}
-    \vspace{0.45em}
-  }%
-}
-\end{center}
+{\sffamily\bfseries\large
+TIL BORGERNE I A'KASTIN}
 
 \vspace{0.35em}
 
-\begin{center}
-{\scriptsize\sffamily\itshape\color{black!65}
-Handelskompagniet: Din indsats. Vores fremgang.}
+{\color{Goldenrod!75!black}
+\rule{0.78\linewidth}{1.2pt}}
+
 \end{center}
 
-\end{tcolorbox}
-\end{center}
+\vspace{0.6em}
 
+\lettrine[lines=1,lhang=0.1,loversize=0.05]{B}{orgere} i A'kastin!
 
-\separator
+Vi, \textbf{Sølvhammerens Orden}, har igennem det sidste år
+øget vores tilstedeværelse i A'kastin som et led i forsvaret af
+Kelllwan Kirkens tjenere, troende og riget.
 
+Vort fokus har været at standse de dæmoniske trusler, der har
+bragt alle vores liv i fare. Under ledelse af
+\textbf{Ordensmester Seiger} har vi bekæmpet enhver fjende,
+der har truet dem, vi har svoret at beskytte.
 
+Vores ridderorden er grundlagt for at beskytte
+\textbf{Kelllwan-troende}, \textbf{Kelllwans præsteskab},
+rigerne under Kelllwans åsyn og alle lovlydige borgere.
 
-\begin{center}
-\fbox{%
-\begin{minipage}{0.9\linewidth}
-\centering
-\vspace{2em}
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}
-\path[
-  decorate,
-  decoration={
-    text along path,
-    text={|\Large\bfseries|KOM SPIS VED DEN TISSENDE NYMFE},
-    text align=center
-  }
+Den største sejr, vi har været med til at frembringe, har været
+\textbf{genopbygningen af Sydporten}.
+
+Gennem vores forbindelser til Kelllwan Kirken og et omfattende
+samarbejde med utallige modige borgere i A'kastin er det
+lykkedes at samle de nødvendige ressourcer og igen rejse
+Sydporten til rigets forsvar.
+
+\vspace{0.5em}
+
+\begin{tcolorbox}[
+  colback=Goldenrod!7,
+  colframe=Goldenrod!65!black,
+  boxrule=0.8pt,
+  sharp corners,
+  title={\sffamily\bfseries EN SÆRLIG TAK},
+  colbacktitle=black!85,
+  coltitle=white,
+  fontupper=\small,
+  left=4mm,
+  right=4mm,
+  top=3mm,
+  bottom=3mm
 ]
-(-6,0) arc[start angle=160, end angle=20, radius=6cm];
 
-\useasboundingbox (-6,0) rectangle (6,1.4);
-\end{tikzpicture}%
-}
-
-\vspace{-0.5em}
-
-{\LARGE\bfseries KOM OVER TIL KROEN!}
+Sølvhammerens Orden ønsker særligt at takke de personer og
+organisationer, der hjalp med at indsamle ressourcerne til
+genopbygningen:
 
 \begin{itemize}
-  \item ØL: 1 Fjend
-  \item Mad: 2 Fjend
-  \item Flaske: 10 Fjend
-  \item God Stemning: 0 Fjend
+  \setlength{\itemsep}{0.35em}
+
+  \item \textbf{Præstinde Halborg Ragnhild Borgesdatter af Halvvog},
+        præstinde for Kelllwan.
+
+  \item \textbf{Kong Dorian af A'kastin}.
+
+  \item \textbf{Esselaia Kirken}
+
+  \item De utallige \textbf{frivillige borgere og indbyggere},
+        som gav deres tid, styrke og ressourcer.
+
+  \item \textbf{Handelskompagniet}.
 \end{itemize}
 
-\end{minipage}%
-}
+\end{tcolorbox}
+
+\vspace{0.6em}
+
+Sølvhammerens Orden vil fortsætte arbejdet med at bekæmpe
+dæmonerne og holde riget frit.
+
+\vspace{0.8em}
+
+\begin{center}
+
+{\color{Goldenrod!75!black}
+\rule{0.55\linewidth}{1pt}}
+
+\vspace{0.5em}
+
+{\sffamily\bfseries\Large
+HIL KELLLWAN}
+
+\vspace{0.25em}
+
+{\sffamily\small\itshape
+Sølvhammerens Orden}
+
+\end{center}
+
+\end{tcolorbox}
 \end{center}
 
 
+% ====== Rohar advertisement ======
 \begin{center}
-\begin{tcolorbox}[
-  enhanced,
-  width=0.94\textwidth,
-  colback=ForestGreen!4,
-  colframe=black,
-  boxrule=1.4pt,
-  borderline={0.7pt}{3pt}{ForestGreen!70!black},
-  sharp corners,
-  boxsep=2mm,
-  left=5mm,
-  right=5mm,
-  top=4mm,
-  bottom=3mm,
-  overlay={
-    % Ornamenter i hjørnerne
-    \draw[ForestGreen!70!black,line width=1.2pt]
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    width=0.94\textwidth,
+    colback=ForestGreen!4,
+    colframe=black,
+    boxrule=1.4pt,
+    borderline={
+      0.7pt
+    }{
+      3pt
+    }{
+      ForestGreen!70!black
+    },
+    sharp corners,
+    boxsep=2mm,
+    left=5mm,
+    right=5mm,
+    top=4mm,
+    bottom=3mm,
+    overlay={
+      % Top-left ornament.
+      \draw[
+        ForestGreen!70!black,
+        line width=1.2pt
+      ]
       ([xshift=2mm,yshift=-2mm]frame.north west)
-      -- ++(11mm,0) -- ++(0,-7mm);
+      -- ++(11mm,0)
+      -- ++(0,-7mm);
 
-    \draw[ForestGreen!70!black,line width=1.2pt]
+      % Top-right ornament.
+      \draw[
+        ForestGreen!70!black,
+        line width=1.2pt
+      ]
       ([xshift=-2mm,yshift=-2mm]frame.north east)
-      -- ++(-11mm,0) -- ++(0,-7mm);
+      -- ++(-11mm,0)
+      -- ++(0,-7mm);
 
-    \draw[ForestGreen!70!black,line width=1.2pt]
+      % Bottom-left ornament.
+      \draw[
+        ForestGreen!70!black,
+        line width=1.2pt
+      ]
       ([xshift=2mm,yshift=2mm]frame.south west)
-      -- ++(11mm,0) -- ++(0,7mm);
+      -- ++(11mm,0)
+      -- ++(0,7mm);
 
-    \draw[ForestGreen!70!black,line width=1.2pt]
+      % Bottom-right ornament.
+      \draw[
+        ForestGreen!70!black,
+        line width=1.2pt
+      ]
       ([xshift=-2mm,yshift=2mm]frame.south east)
-      -- ++(-11mm,0) -- ++(0,7mm);
-  }
-]
+      -- ++(-11mm,0)
+      -- ++(0,7mm);
+    }
+  ]
 
-\begin{center}
-{\sffamily\bfseries\small
-TRÆT AF SVAGE GUDER OG TOMME LØFTER?}
+    \begin{center}
+      {%
+        \sffamily
+        \bfseries
+        \small
+        TRÆT AF SVAGE GUDER OG TOMME LØFTER?%
+      }
 
-\vspace{0.15em}
+      \vspace{0.15em}
 
-{\sffamily\bfseries\fontsize{28}{29}\selectfont
-\textcolor{ForestGreen!55!black}{REJS DIG FOR ROHAR!}}
+      {%
+        \sffamily
+        \bfseries
+        \fontsize{22}{24}\selectfont
+        \textcolor{ForestGreen!55!black}{%
+          REJS DIG FOR ROHAR!%
+        }%
+      }
 
-\vspace{0.1em}
+      \vspace{0.1em}
 
-{\sffamily\bfseries\large
-KONGEN - DEN DER KOM TILBAGE}
+      {%
+        \sffamily
+        \bfseries
+        \large
+        KONGEN - DEN DER KOM TILBAGE%
+      }
+    \end{center}
+
+    \vspace{0.5em}
+
+    \noindent
+    \colorbox{black}{%
+      \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+        \centering
+        \color{white}
+        \itshape
+        \large
+
+        ``Før var jeg træt og deprimeret, men så prøvede jeg
+        at tilbede Rohar. Nu har jeg styrke, et formål og en
+        gud, der råber gode råd gennem min økse!''
+
+        \normalfont
+        \small
+
+        - Gruk Jernpande, tidligere Orlek Præst
+      }%
+    }
+
+    \vspace{0.7em}
+
+    \begin{center}
+      \colorbox{ForestGreen!70!black}{%
+        \parbox{0.88\linewidth}{%
+          \centering
+          \color{white}
+          \sffamily
+          \bfseries
+          \large
+
+          SPØRG EFTER ROHAR PRÆSTEN ELLER TEMPELKRIGEREN
+          HVIS DU GERNE VIL VIDE MERE!
+
+          \smallskip
+
+          \normalsize
+
+          Medbring jern, og alle dine fjend for at vise
+          at du er værdig.
+        }%
+      }
+    \end{center}
+
+    \vspace{0.4em}
+
+    \begin{center}
+      {%
+        \sffamily
+        \bfseries
+        ROHAR DØDE. DET STOPPEDE HAM IKKE.\\
+        HVAD ER DIN UNDSKYLDNING?%
+      }
+    \end{center}
+
+  \end{tcolorbox}
 \end{center}
 
-\vspace{0.5em}
+% ============================================================
+% ADVERTISEMENTS
+% ============================================================
 
-\noindent
-\colorbox{black}{%
-  \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
-    \centering
-    \color{white}
-    \itshape\large
-    ``Før var jeg træt og deprimeret, men så prøvede jeg
-    at tilbede Rohar. Nu har jeg styrke, et formål og en
-    gud, der råber gode råd gennem min økse!''
-    
-    \normalfont\small
-    - Gruk Jernpande, tidligere Orlek Præst
-  }%
-}
+% ====== Handelskompagniets Kongetand-reklame ======
+\begin{figure}
+  \centering
+  \includegraphics[width=0.98\textwidth]{Drakka.png}
+\end{figure}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.98\textwidth]{Dværgesprit.png}
+\end{figure}
 
-\vspace{0.7em}
-
-\begin{center}
-\colorbox{ForestGreen!70!black}{%
-  \parbox{0.88\linewidth}{%
-    \centering
-    \color{white}
-    \sffamily\bfseries\large
-    SPØRG EFTER ROHAR PRÆSTEN ELLER TEMPELKRIGEREN HVIS DU GERNE VIL VIDE MERE!
-
-    \smallskip
-    \normalsize
-    Medbring jern, og alle dine fjend for at vise at du er værdig.
-  }%
-}
-\end{center}
-
-\vspace{0.4em}
-
-\begin{center}
-{\sffamily\bfseries
-ROHAR DØDE. DET STOPPEDE HAM IKKE.\\
-HVAD ER DIN UNDSKYLDNING?}
-\end{center}
-
-
-\end{tcolorbox}
-\end{center}
-
-
-\clearpage
-\thispagestyle{newspaper}
-
-\begin{center}
-  \includegraphics[
-    width=\textwidth,
-    height=0.96\textheight,
-    keepaspectratio,
-    trim={12mm 17mm 12mm 17mm},
-    clip
-  ]{artikel.pdf}
-\end{center}
-
-\clearpage
-\thispagestyle{empty}
-
-\vspace*{\fill}
-
-\begin{tcolorbox}[
-  enhanced,
-  width=\textwidth,
-  height=0.92\textheight,
-  valign=center,
-  colback=black!2,
-  colframe=Maroon!90!black,
-  boxrule=1.8pt,
-  borderline={0.7pt}{4pt}{Goldenrod!80!black},
-  sharp corners,
-  boxsep=3mm,
-  left=8mm,
-  right=8mm,
-  top=8mm,
-  bottom=8mm,
-  overlay={
-    % Indvendig guldramme
-    \draw[
-      Goldenrod!75!black,
-      line width=0.7pt
-    ]
-      ([xshift=6mm,yshift=-6mm]frame.north west)
-      rectangle
-      ([xshift=-6mm,yshift=6mm]frame.south east);
-
-    % Øverste venstre hjørne
-    \draw[
-      Goldenrod!85!black,
-      line width=1.5pt
-    ]
-      ([xshift=9mm,yshift=-9mm]frame.north west)
-      -- ++(22mm,0)
-      -- ++(0,-8mm);
-
-    % Øverste højre hjørne
-    \draw[
-      Goldenrod!85!black,
-      line width=1.5pt
-    ]
-      ([xshift=-9mm,yshift=-9mm]frame.north east)
-      -- ++(-22mm,0)
-      -- ++(0,-8mm);
-
-    % Nederste venstre hjørne
-    \draw[
-      Goldenrod!85!black,
-      line width=1.5pt
-    ]
-      ([xshift=9mm,yshift=9mm]frame.south west)
-      -- ++(22mm,0)
-      -- ++(0,8mm);
-
-    % Nederste højre hjørne
-    \draw[
-      Goldenrod!85!black,
-      line width=1.5pt
-    ]
-      ([xshift=-9mm,yshift=9mm]frame.south east)
-      -- ++(-22mm,0)
-      -- ++(0,8mm);
-
-    % Små dekorative diamanter
-    \node[
-      diamond,
-      fill=Maroon!90!black,
-      draw=Goldenrod!80!black,
-      line width=0.8pt,
-      minimum size=5mm
-    ] at ([yshift=-6mm]frame.north) {};
-
-    \node[
-      diamond,
-      fill=Maroon!90!black,
-      draw=Goldenrod!80!black,
-      line width=0.8pt,
-      minimum size=5mm
-    ] at ([yshift=6mm]frame.south) {};
-  }
-]
-
-\begin{center}
-
-{\sffamily\bfseries\small\color{Maroon!90!black}
-DEN RULLENDE STEN PRÆSENTERER}
-
-\vspace{0.5em}
-
-
-\vspace{2.8em}
-
-{\sffamily\bfseries\fontsize{18}{20}\selectfont
-\color{black!75}
-EN SÆRLIG TAK TIL}
-
-\vspace{0.25em}
-
-{\sffamily\bfseries\fontsize{34}{37}\selectfont
-\color{Maroon!90!black}
-FAMILIEN VINTERKRONE}
-
-\vspace{0.5em}
-
-{\color{Goldenrod!80!black}
-\rule{0.82\linewidth}{2pt}}
-
-\vspace{1.3em}
-
-\includegraphics[
-  width=0.80\linewidth,
-  keepaspectratio
-]{vinterkroneSkjold.png}
-
-\vspace{1.3em}
-
-\begin{tcolorbox}[
-  width=0.84\linewidth,
-  colback=Maroon!90!black,
-  colframe=Goldenrod!80!black,
-  boxrule=1.2pt,
-  sharp corners,
-  left=6mm,
-  right=6mm,
-  top=4mm,
-  bottom=4mm
-]
-\centering
-
-{\sffamily\bfseries\large\color{white}
-Vi takker Familien Vinterkrone}
-
-\vspace{0.25em}
-
-{\sffamily\itshape\normalsize\color{white}
-for deres støtte til avisen og deres bidrag til,
-at sandheden fortsat kan blive trykt.}
-
-\end{tcolorbox}
-
-\vspace{1.1em}
-
-\vspace{1.95em}
-
-{\sffamily\bfseries\small\color{black!65}
-MED TAK FRA REDAKTIONEN PÅ DEN RULLENDE STEN}
-
-\end{center}
-
-\end{tcolorbox}
 
 \vspace*{\fill}
 
 \clearpage
 
-\end{document} 
+\end{document}
