@@ -22,7 +22,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{microtype}
-\usepackage{newtxtext}
+\ifdefined\screenproof
+  % MiKTeX's screen-proof route can encounter non-scalable font
+  % instances while shipping memoir pages. Protrusion remains active.
+  \microtypesetup{expansion=false}
+\fi
+% Latin Modern is fully scalable in both screen-proof and booklet output.
+\usepackage{lmodern}
 \usepackage[scaled]{helvet}
 
 % ====== Graphics, colour, columns, and boxes ======
@@ -31,10 +37,13 @@
 \usepackage{eso-pic}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tikz}
+\usepackage{tikzpagenodes}
 \usetikzlibrary{
+  calc,
   decorations.text,
   fadings,
   patterns,
+  positioning,
   shapes.geometric
 }
 
@@ -80,12 +89,15 @@
 % Use \bookletprinttrue for a print-ready landscape A4 PDF.
 % Use \bookletprintfalse for a normal sequential portrait A5 PDF.
 \newif\ifbookletprint
-\bookletprinttrue
+\ifdefined\screenproof
+  \bookletprintfalse
+\else
+  \bookletprinttrue
+\fi
 
 % The booklet package must be loaded after the memoir page layout.
 \ifbookletprint
   \usepackage[print,1to1]{booklet}
-  \nofiles
 \else
   \usepackage[noprint,1to1]{booklet}
 \fi
@@ -409,14 +421,14 @@
 \end{center}
 
 \begin{center}
-  {\Large\sffamily Udgave 135}
+  {\Large\sffamily Udgave 136}
 \end{center}
 
 \FrontFeatureImage
-  {SølvRavnen.png}
-  {To nye guder dukker op}
-  {Hvem er Sølvravnen og Den Grå Fyrste?}
-  {"Har vi ophøjet to noble?"}
+  {assets/royal/Aurelia Fjendebane.jpg}
+  {Kejserinde Aurelia er død}
+  {DEN RØDE TRONE STÅR TOM}
+  {Syndicatet mistænkes, mens fire parter ruster til borgerkrig}
   {}
 
 \vspace{.75\baselineskip}
@@ -425,286 +437,95 @@
 
 % ====== Lead story ======
 \par\medskip
-\headline{TO GUDINDER DØDE\\ TO NYE GUDER REJSTE SIG}
+\headline{KEJSERINDEN ER DØD\\ BORGERKRIGEN BEGYNDER}
 \par\medskip
-\deck{Gudestenene krævede deres pris, mens mere end tyve ritualer ændrede gudernes sfærer.}
+\deck{Aurelia døde efter sit besøg i A'kastin. Nu marcherer hære mod Nordland, mens en ubekræftet mistanke retter sig mod terrorgruppen Syndicatet.}
 \par\medskip
 \byline{Redaktionen}
 \medskip
 
-\begin{wrapfigure}[20]{r}{0.43\columnwidth}
+\lettrine[lines=3,lhang=0.1,loversize=0.05]{K}{ejserinde}
+Aurelia Fjendebane er død, og med hende er den sidste ubestridte regent af Den Røde Trone forsvundet. Dødsbudskabet kom kort efter hendes besøg i A'kastin, hvor hun havde vist sig blandt konger, præster og soldater, men dog beskyttet af Den Royale Garde.
+
+\begin{wrapfigure}[23]{r}{0.43\columnwidth}
 \vspace{4pt}
 \begin{infobox}{DET VED VI}
 \begin{itemize}
 \setlength{\itemsep}{0.25em}
-\item Esselaia og Morwen er døde.
-\item Morwen er blevet fuldstændigt udslettet.
-\item Esselaias død menes at skabe Krigens Ærkedæmon.
-\item Celina Coco er ophøjet som Sølvravnen.
-\item Den Grå Fyrste er ophøjet som civilisationens og den sande adels gud.
+\item Aurelia døde efter sit besøg i A'kastin.
+\item Dødsårsagen er ikke offentligt fastslået.
+\item Syndicatet nævnes som mulig bagmand, men ingen beviser er fremlagt.
+\item Conrad Fjendebane marcherer mod Nordland med en hær.
+\item Talia, Severin og Ismarelda fremsætter hver deres krav til rigets fremtid.
 \end{itemize}
 \end{infobox}
 \end{wrapfigure}
 
-\lettrine[lines=2,lhang=0.1,loversize=0.05]{K}{alish}
-har mistet to gudinder og fået to nye guder, men hvem er de og hvad førte til disse ukendte enheder blev ophøjet.
+Hoffet har endnu ikke fremlagt en dødsårsag. Der er heller ikke offentliggjort et tidspunkt, et gerningssted eller navnet på en mistænkt. Alligevel har nyheden allerede sat hære i bevægelse.
 
-Begivenhederne begyndte ved Kaostræet for godt et år siden, hvor sortelvere ofrede fem væsner fra hver race og vandede træets rødder med deres blod. De håbede efter sigende at få del i træets magt.
+Conrad Fjendebane, der i årevis blev regnet for død ved Sydporten, er vendt tilbage i spidsen for en hær. Hans mål er Nordland og Den Røde Trone. Samtidig nægter hans egne børn og Ismarelda Vinterkrone at anerkende hans ret til at herske.
 
-I stedet blev gamle kræfter i A'kastin vækket.
+\subsection*{Dødsbuddet efter A'kastin}
 
-På gudernes helliggrunde voksede de såkaldte Gudesten frem. Hver sten var forbundet til en gud, og kunne bruges til at påkalde den sagn-omspundende overguds magt til at dræbe en gud.
+Aurelias rejse til A'kastin er det sidste sikre holdepunkt i fortællingen om hendes liv. Hun blev set blandt flere af Kalishs magtfulde skikkelser og forlod siden besøget. Derefter kom meldingen om hendes død.
 
-Oldstenene, som gudestenene også er kendt, var tidligere blevet brugt mod Daikia. Deres virkning var derfor kendt: Når stenene aktiveres, vil mindst én gud dø.
+Det er endnu uklart, om hun døde under hjemrejsen, mens hun stadig var i A'kastin eller et helt tredje sted. Netop manglen på en officiel forklaring har gjort hvert hul i tidslinjen til grobund for rygter og konspirations teorier.
 
-\subsection*{To gudinder rammes}
+Nogle peger på striden om guddommelig magt i A'kastin. Andre peger på kejserfamiliens egne fjender. Det alvorligste rygte nævner dog den skjulte terrorgruppe kendt som Syndicatet.
 
-Nogle af stenene blev rettet mod Morwen, mens andre blev rettet mod Esselaia.
+\subsection*{Syndicatets skygge}
 
-En tempelkriger i Morwens tjeneste valgte at rette sin sten mod Esselaia. Han håbede, at en ligelig fordeling ville gøre de to gudinder i stand til sammen at modstå stenenes kraft.
+Ingen myndighed har fremlagt beviser for, at Syndicatet dræbte Aurelia. Den Rullende Sten kan heller ikke bekræfte, at gruppens medlemmer befandt sig nær kejserinden. Mistanken skal derfor behandles som netop en mistanke.
 
-Det skete ikke, især da Morwen ikke var en sand gud, men en Ærkedæmon i forklædning.
+Men teorien spreder sig af en grund. Det er ingen hemmelighed at Aurelia var en af spidskandidaterne til blive ophøjet som en ny gudinde. Derfor er det ikke utænkeligt at denne gruppe som er modstander af alle guder, ville gøre deres for at stoppe hende.
 
-Da gudinderne døde, forsvandt solen. Naturen skreg, tiden føltes forkert, og økonomien mistede den guddommelige orden, der hidtil havde understøttet den.
+Det afgørende spørgsmål er derfor, hvem der kunne komme tæt nok på Aurelia efter besøget i A'kastin. Indtil hoffet åbner sine arkiver må dette være hen i det uvisse, men nogen peger på at det kunne være Dorian Vinterkrone, for at give hans bedstemor en mulighed for at blive kejserinde.
 
-Morwen efterlod intet. Da hun allerede havde været en ærkedæmon før sin ophøjelse, kunne den normale forvandling ikke gentage sig. Hun blev i stedet fuldstændigt udslettet.
+\subsection*{Den døde kejsersøn vender tilbage}
 
-Esselaias skæbne er anderledes.
+Mens mistanken samler sig om Aurelias død, har Conrad Fjendebane gjort sit krav umuligt at overse.
 
-Inkvisitionen har ikke bekræftet noget, men tidligere undersøgelser i denne avis har beskrevet, hvordan en død gud kan blive til en ærkedæmon for det modsatte af sit vigtigste princip.
+Conrad er søn af Erik II og blev meldt død efter slaget ved Sydporten. Nu hævder han, at beretningen var falsk, og at han overlevede. Under Imperiets symbol fører han en blandet hær af mennesker, elvere, dværge og orkere mod Nordland for at tage Den Røde Trone, som per lov er hans.
 
-Esselaia var først og fremmest fredens gudinde.
+Talia og Severin Fjendebane påstår, at deres far virkelig døde ved Sydporten. Ifølge dem er den skikkelse, der nu kalder sig Conrad, et gespenst vækket til live af den nederdrægtige Hrothgar. Den mystiske ork blev set ved A'kastin i sommer, kort før Conrad igen viste sig. Dette ville selvfølgelig gøre Conrads krav på tronen ugyldig, og under normale omstændigheder ville kronen tilfalde den næste arving.
 
-Det, der følger efter hende, kendes derfor som \textbf{Krigens Ærkedæmon}.
+Ingen undersøgelse har afgjort, om Conrad er levende, genopstået eller noget helt tredje.
 
-\subsection*{Kampen om gudernes pladser}
+\subsection*{Børnene vælger hver sin fremtid}
 
-Efter gudindernes død begyndte ophøjelsesritualerne.
+Conrads børn står sammen om mistanken mod deres far, men ikke om, hvad der bør erstatte ham.
 
-På tre ritualpladser rundt omkring i A'kastin blev der gennemført mere end tyve mindre ritualer. Gamle artefakter kunne her binde guddommelige domæner til kandidaterne.
+\textbf{Talia Fjendebane} voksede op i Permersland og har samlet kræfter omkring et radikalt opgør med selve den royale linje. Hun vil ikke blot udskifte personen på tronen. Hendes tilhængere vil bryde den gamle kejserfamilies magt og skabe et andet Imperium af resterne, et hun påstår er eget af folket. Dette gør naturligt at mange ser hende som en ustabil kandidat, især da hun opgav retten til at arve kronen og vidergive den til Aurelia.
 
-Mere end syv personer forsøgte at samle støtte.
+\textbf{Severin Fjendebane} blev derimod opdraget i Kelllwan Kirken. Han hævder som Conrads førstefødte sin egen arveret, men ser tronen som redskab for et religiøst enevælde. Mange frygter at han vil placere Kelllwans messias på tronen, hvilket ville medfører ustabilitet, og eksperter ser at dette kunne vælte Salezstand og Rosenborg som handels-centrummer, hvis andre religioner ikke er velkommende. 
 
-Kong Dorian Vinterkrone støttede kandidater, der kunne gavne A'kastin og hans styre. Kejserinden ankom med egne ambitioner, mens både Elaith og efter sigende Hrothgar ligeledes forsøgte at gøre krav på guddommelig magt.
+De to arvinger kan altså være enige om, at Conrad ikke længere er deres far. Men Severin mener at Talia er en front for Syndicatet, som har haft rødder i Permersland, mens Talia mener at Severin opgav alle krav på tronen da han viede sig selv til Kirken.
 
-Da ritualerne sluttede, var det dog to helt andre skikkelser, der stod tilbage.
+\subsection*{Vinterkronens lovkrav}
 
-\subsection*{Sølvravnen rejser sig}
+Den fjerde part er \textbf{Ismarelda Vinterkrone}, grankusine til Erik II. Mens Aurelia befandt sig i A'kastin, overtog Ismarelda pladsen som regent, da pladsen lovligt faldt til hende. Efter dødsbudskabet hævder hun, at dette ansvar og hendes plads i slægten gør hende til den eneste lovlige arving.
 
-Den første var Celina Coco, bedre kendt som Sølvravnen.
+Denne påstand er heller ikke uden vægt. Hvis Conrad viser sig at være et gespenst som blev genoplivet af Hrothgar, så er der et argument i at Conrads børn allerede har gjort afkast på tronen, og derfor ikke kan være retmæssige arvinger. I såfald, vil Ismarelda være den næste arving\footnote{Det forventes ikke at man vil skifte navnenet på Fjend til Vinter}.
 
-Celina var leder af en gruppe dusørjægere og blev kendt for sin evne til at opspore Sølvfjend. Trods en næsten legendarisk gæld brugte hun sine penge på sit folk, særligt på musik, fornøjelser og hjælp til dem omkring sig.
+Hendes støtter fremhæver, at hun allerede har båret rigets ansvar, og derfor også han den nødvendige erfaring for at opretholde fred.
 
-Efter Esselaias død valgte dragerne at stille sig bag hende.
+Vinterkronens stærkeste indflydelse findes i Salezstand, hvor hendes barnebarn Dorian Vinterkrone allerede har lagt meget arbejde i at sprede hans indflydelse. Det gør hende vanskelig at ignorere, selv hvis Conrad når Nordland først.
 
-Celina blev ophøjet med \textbf{Omsorg} som sit overordnede princip og med domænerne \textbf{Musik}, \textbf{Drager} og \textbf{Natur}.
+\subsection*{Nordland kan blive den første front}
 
-\begin{pullquote}
-``Rigdom har kun værdi, når den skaber glæde for andre.''
-- Celina Coco
-\end{pullquote}
+Conrads fremmarch gør Nordland til borgerkrigens umiddelbare brændpunkt. Det er tydeligt at alle partner på nuværende tidspunkt undgår A'kastin, I et håb om at bevare deres styrker. Men hvis Conrad indtager Den Røde Trone vil de andre parter måske begynde at rekrutere eventyrer hvis loyalitet ikke kan verificeres.
 
-Sølvravnen står dermed som arvtager til flere af de områder, der blev efterladt tomme efter Esselaia.
+Men krigen afgøres næppe alene der. Talia kan trække på utilfredsheden i Permersland, Severin på kirken og Ismarelda på de dele af adelen, der foretrækker lov og kontinuitet.
 
-\subsection*{Den Grå Fyrste rejser sig}
+Borgerne bør være varsomme med rygter og skråsikre bekendtgørelser. Hold øje med troppebevægelser, lukkede veje og krav om troskabsed.
 
-Den anden ophøjelse fik et langt mere uventet udfald.
+På de følgende sider bringer vi kejserfamiliens stamtræ og en oversigt over de fire parter.
 
-Sortelvernes dronning forsøgte at tage den sidste guddommelige plads, men under det afsluttende ritual blev hun stukket ned af Den Grå Fyrste, som selv forsøgte at træde ind i hendes sted.
+% ============================================================
+% ROYAL FAMILY TREE - TWO-PAGE FEATURE
+% ============================================================
 
-Med ham fulgte Lucius Krellenius.
-
-Lucius havde gennem længere tid båret Den Grå Fyrstes kranie og lyttet til den gamle nekromantikers hvisken. Som fjerde søn af en gammel adelsslægt havde Lucius dog udviklet en helt anden forståelse af magt: Adel var for ham ansvar, værdighed og det eftermæle, man efterlader.
-
-Da Den Grå Fyrste under ophøjelsen gav efter for sin gamle hunger efter magt og brutalitet, greb Lucius ind.
-
-Han lod sig opsluge af Fyrsten og fyldte samtidig den guddommelige kraft med sine egne idealer.
-
-Det ændrede den skikkelse, der rejste sig.
-
-Den nye Grå Fyrste ønskede ikke længere at herske over de døde. I stedet vendte hans blik sig mod de dødelige: deres historier, deres samfund og det, de formår at bygge og efterlade.
-
-Den Grå Fyrste er derfor blevet gud for \textbf{Civilisation}, \textbf{Strategi}, \textbf{Adel} og \textbf{Døden}.
-
-\begin{pullquote}
-``Skab dig et eftermæle, noget der overlever dig. Den enkelte dør, men værker består.''
-- Den Grå Fyrste
-\end{pullquote}
-
-\subsection*{En ny guddommelig orden}
-
-Kalish står derfor tilbage med to nye guder, der næppe kunne være mere forskellige.
-
-Sølvravnen lærer sine tilbedere at passe på deres folk, dele deres rigdom og lade musik og natur skabe glæde.
-
-Den Grå Fyrste lærer dem at bygge noget, der varer længere end deres eget liv, og at forstå magt som ansvar.
-
-Men sejren har haft en pris.
-
-Morwen findes ikke længere.
-
-Esselaia er død.
-
-Og hvis undersøgelserne af hendes skæbne er korrekte, er fredens tidligere gudinde nu ved at blive til noget, som Kalish endnu ikke har mødt:
-
-Krigens Ærkedæmon.
-
-\separator
-
-\par\medskip
-
-\textit{Redaktionen modtager oplysninger om Sølvravnens og Den Grå Fyrstes nye præster, templer og varsler. Som altid accepteres anonyme henvendelser.}
-
-
-% ====== Bekendtgørelse fra Sølvhammerens Orden ======
-
-\begin{center}
-\begin{tcolorbox}[
-  enhanced,
-  width=0.94\textwidth,
-  colback=black!2,
-  colframe=black!85,
-  boxrule=1.4pt,
-  breakable,
-  borderline={0.7pt}{3pt}{Goldenrod!70!black},
-  sharp corners,
-  boxsep=2mm,
-  left=7mm,
-  right=7mm,
-  top=5mm,
-  bottom=5mm,
-  overlay={
-    % Dekorative hjørner
-    \draw[Goldenrod!75!black,line width=1.2pt]
-      ([xshift=2mm,yshift=-2mm]frame.north west)
-      -- ++(14mm,0) -- ++(0,-7mm);
-
-    \draw[Goldenrod!75!black,line width=1.2pt]
-      ([xshift=-2mm,yshift=-2mm]frame.north east)
-      -- ++(-14mm,0) -- ++(0,-7mm);
-
-    \draw[Goldenrod!75!black,line width=1.2pt]
-      ([xshift=2mm,yshift=2mm]frame.south west)
-      -- ++(14mm,0) -- ++(0,7mm);
-
-    \draw[Goldenrod!75!black,line width=1.2pt]
-      ([xshift=-2mm,yshift=2mm]frame.south east)
-      -- ++(-14mm,0) -- ++(0,7mm);
-  }
-]
-
-\begin{center}
-
-{\sffamily\bfseries\small\color{black!65}
-OFFICIEL BEKENDTGØRELSE}
-
-\vspace{0.25em}
-
-{\sffamily\bfseries\fontsize{27}{29}\selectfont
-SØLVHAMMERENS ORDEN}
-
-\vspace{0.2em}
-
-{\sffamily\bfseries\large
-TIL BORGERNE I A'KASTIN}
-
-\vspace{0.35em}
-
-{\color{Goldenrod!75!black}
-\rule{0.78\linewidth}{1.2pt}}
-
-\end{center}
-
-\vspace{0.6em}
-
-\lettrine[lines=1,lhang=0.1,loversize=0.05]{B}{orgere} i A'kastin!
-
-Vi, \textbf{Sølvhammerens Orden}, har igennem det sidste år
-øget vores tilstedeværelse i A'kastin som et led i forsvaret af
-Kelllwan Kirkens tjenere, troende og riget.
-
-Vort fokus har været at standse de dæmoniske trusler, der har
-bragt alle vores liv i fare. Under ledelse af
-\textbf{Ordensmester Seiger} har vi bekæmpet enhver fjende,
-der har truet dem, vi har svoret at beskytte.
-
-Vores ridderorden er grundlagt for at beskytte
-\textbf{Kelllwan-troende}, \textbf{Kelllwans præsteskab},
-rigerne under Kelllwans åsyn og alle lovlydige borgere.
-
-Den største sejr, vi har været med til at frembringe, har været
-\textbf{genopbygningen af Sydporten}.
-
-Gennem vores forbindelser til Kelllwan Kirken og et omfattende
-samarbejde med utallige modige borgere i A'kastin er det
-lykkedes at samle de nødvendige ressourcer og igen rejse
-Sydporten til rigets forsvar.
-
-\vspace{0.5em}
-
-\begin{tcolorbox}[
-  colback=Goldenrod!7,
-  colframe=Goldenrod!65!black,
-  boxrule=0.8pt,
-  sharp corners,
-  title={\sffamily\bfseries EN SÆRLIG TAK},
-  colbacktitle=black!85,
-  coltitle=white,
-  fontupper=\small,
-  left=4mm,
-  right=4mm,
-  top=3mm,
-  bottom=3mm
-]
-
-Sølvhammerens Orden ønsker særligt at takke de personer og
-organisationer, der hjalp med at indsamle ressourcerne til
-genopbygningen:
-
-\begin{itemize}
-  \setlength{\itemsep}{0.35em}
-
-  \item \textbf{Præstinde Halborg Ragnhild Borgesdatter af Halvvog},
-        præstinde for Kelllwan.
-
-  \item \textbf{Kong Dorian af A'kastin}.
-
-  \item \textbf{Esselaia Kirken}
-
-  \item De utallige \textbf{frivillige borgere og indbyggere},
-        som gav deres tid, styrke og ressourcer.
-
-  \item \textbf{Handelskompagniet}.
-\end{itemize}
-
-\end{tcolorbox}
-
-\vspace{0.6em}
-
-Sølvhammerens Orden vil fortsætte arbejdet med at bekæmpe
-dæmonerne og holde riget frit.
-
-\vspace{0.8em}
-
-\begin{center}
-
-{\color{Goldenrod!75!black}
-\rule{0.55\linewidth}{1pt}}
-
-\vspace{0.5em}
-
-{\sffamily\bfseries\Large
-HIL KELLLWAN}
-
-\vspace{0.25em}
-
-{\sffamily\small\itshape
-Sølvhammerens Orden}
-
-\end{center}
-
-\end{tcolorbox}
-\end{center}
+\input{royal-family.tex}
 
 
 % ====== Rohar advertisement ======
@@ -860,16 +681,6 @@ Sølvhammerens Orden}
 % ADVERTISEMENTS
 % ============================================================
 
-% ====== Handelskompagniets Kongetand-reklame ======
-\begin{figure}
-  \centering
-  \includegraphics[width=0.98\textwidth]{Drakka.png}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.98\textwidth]{Dværgesprit.png}
-\end{figure}
 
 
 \vspace*{\fill}
