@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.3) (preloaded format=pdflatex 2025.9.8)  18 AUG 2026 10:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.3) (preloaded format=pdflatex 2025.9.8)  18 AUG 2026 12:44
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1649,24 +1649,13 @@ Overfull \hbox (17.05023pt too wide) in paragraph at lines 434--434
 
 )
 
-
-Package lettrine.sty Info: Targeted height = 17.26949pt
-(lettrine.sty)             (for loversize=0, accent excluded),
-(lettrine.sty)             Lettrine height = 18.13309pt (D) loversize=0.05;
-(lettrine.sty)             reported on input line 553.
-
-
-
-
-
-
 <Drakka.png, id=56, 1027.84pt x 1541.76pt>
 
 File: Drakka.png Graphic file (type png)
 
 <use Drakka.png>
 
-Package pdftex.def Info: Drakka.png  used on input line 618.
+Package pdftex.def Info: Drakka.png  used on input line 530.
 (pdftex.def)             Requested size: 328.0pt x 492.00882pt.
 
 <Dværgesprit.png, id=57, 1027.84pt x 1541.76pt>
@@ -1675,10 +1664,10 @@ File: Dværgesprit.png Graphic file (type png)
 
 <use Dværgesprit.png>
 
-Package pdftex.def Info: Dværgesprit.png  used on input line 619.
+Package pdftex.def Info: Dværgesprit.png  used on input line 531.
 (pdftex.def)             Requested size: 328.0pt x 492.00882pt.
 
-Overfull \hbox (15.0pt too wide) in paragraph at lines 618--620
+Overfull \hbox (15.0pt too wide) in paragraph at lines 530--532
 [][]
  []
 
@@ -1686,25 +1675,22 @@ Overfull \hbox (15.0pt too wide) in paragraph at lines 618--620
 
 
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 20.89993pt on input line 695.
+(Font)              scaled to size 20.89993pt on input line 607.
 
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 10.40245pt on input line 706.
+(Font)              scaled to size 10.40245pt on input line 618.
 
 
 
 
 
 
-[1{C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}
+[1{C:/Users/NTNS/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
- <./Logo.png> <./assets/royal/Aurelia Fjendebane.jpg>] [2{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc} <./Dværgesprit.png (PNG copy)>] [3
-
- <./Drakka.png (PNG copy)>] [4] [5
+ <./Logo.png> <./assets/royal/Aurelia Fjendebane.jpg>] [2{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [3] [4 <./Dværgesprit.png (PNG copy)>] [5
 
 
-
- <./assets/royal/Kong Dorian.png> <./assets/royal/vinterkroneSkjold.png>] [6
+ <./Drakka.png (PNG copy)> <./assets/royal/Kong Dorian.png> <./assets/royal/vinterkroneSkjold.png>] [6
 
 
  <./assets/royal/Erik Fjendebane.png> <./assets/royal/Imperiet.jpg> <./assets/royal/Talia-rebel-crown.png> <./assets/royal/Severin-church-crown.png> <./assets/royal/Ismarelda-winter-crown.png> <./assets/royal/Conrad Fjendebane.png> <./assets/royal/Talia Fjendebane.png> <./assets/royal/Severin Fjendebane.png> <./assets/royal/Ismarelda Vinterkrone.png>]
@@ -1725,17 +1711,17 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 38913 strings out of 469959
- 946980 string characters out of 5470319
- 1576120 words of memory out of 5000000
- 64647 multiletter control sequences out of 15000+600000
- 786175 words of font info for 330 fonts, out of 8000000 for 9000
+ 38884 strings out of 469959
+ 946553 string characters out of 5470319
+ 1567120 words of memory out of 5000000
+ 64638 multiletter control sequences out of 15000+600000
+ 778976 words of font info for 317 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 85i,17n,93p,1100b,1027s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 85i,17n,93p,1100b,1033s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/NTNS/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on main.pdf (6 pages, 27365309 bytes).
+Output written on main.pdf (6 pages, 27353854 bytes).
 PDF statistics:
  163 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 153850 words of extra memory for PDF output out of 154059 (max. 10000000)
+ 149754 words of extra memory for PDF output out of 154059 (max. 10000000)
 
