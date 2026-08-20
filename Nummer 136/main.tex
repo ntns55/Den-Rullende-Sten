@@ -17,6 +17,8 @@
 
 \newsavebox{\FrontImgBox}
 \newlength{\FrontClip}
+\newlength{\FrontMaxHeight}
+\newlength{\FrontWidth}
 
 % ====== Fonts and language support ======
 \usepackage[T1]{fontenc}
@@ -36,6 +38,7 @@
 \usepackage{graphicx}
 \usepackage{eso-pic}
 \usepackage[dvipsnames]{xcolor}
+\definecolor{FrontRed}{HTML}{781B1B}
 \usepackage{tikz}
 \usepackage{tikzpagenodes}
 \usetikzlibrary{
@@ -175,6 +178,13 @@
   outer color=transparent!100
 ]
 
+% Smooth transition used behind cover text: transparent above, dark below.
+\tikzfading[
+  name=front text fade,
+  top color=transparent!100,
+  bottom color=transparent!0
+]
+
 % ====== Text outline ======
 \contourlength{0.9pt}
 \contournumber{32}
@@ -276,108 +286,85 @@
 %   {credit}
 
 \newcommand{\FrontFeatureImage}[5]{%
-  % Typeset and measure the image.
+  \par\noindent
+  % The masthead is deliberately compact, so the lead image can use most of
+  % the remaining A5 page instead of leaving a large unused area below it.
+  \setlength{\FrontMaxHeight}{.88\textheight}%
+  \setlength{\FrontWidth}{\dimexpr\textwidth+14mm\relax}%
+  % Scale consistently to the same width used by the frame and overlays.
   \sbox{\FrontImgBox}{%
-    \includegraphics[
-      width=0.94\textwidth
-    ]{#1}%
+    \includegraphics[width=\FrontWidth]{#1}%
   }%
-
-  % Total scaled image height.
-  \dimen0=\dimexpr
-    \ht\FrontImgBox+
-    \dp\FrontImgBox
-  \relax
-
-  % Maximum image height on an A5 page.
-  \dimen2=.70\textheight
-
-  % Select the visible height.
-  \ifdim\dimen0>\dimen2
-    \setlength{\FrontClip}{\dimen2}%
-  \else
-    \setlength{\FrontClip}{\dimen0}%
-  \fi
-
-  \begin{tikzpicture}
-    % Image frame coordinates.
-    \coordinate (TL) at (0,0);
-    \coordinate (TR) at (\textwidth,0);
-    \coordinate (BL) at (0,-\FrontClip);
-    \coordinate (BR) at (\textwidth,-\FrontClip);
-
-    % Image.
+  \setlength{\FrontClip}{\dimexpr\ht\FrontImgBox+\dp\FrontImgBox\relax}%
+  \ifdim\FrontClip>\FrontMaxHeight
+    \setlength{\FrontClip}{\FrontMaxHeight}%
+  \fi%
+  \makebox[\textwidth][c]{\begin{tikzpicture}
+    % Positive coordinates give TeX a box with the full visible height;
+    % negative coordinates would otherwise let the picture overlap the masthead.
+    \path[use as bounding box] (0,0) rectangle (\FrontWidth,\FrontClip);
     \begin{scope}
-      \clip (TL) rectangle (BR);
+      \clip (0,0) rectangle (\FrontWidth,\FrontClip);
+      \node[anchor=north west,inner sep=0pt] at (0,\FrontClip)
+        {\usebox{\FrontImgBox}};
 
-      \node[
-        anchor=north west,
-        inner sep=0pt,
-        path fading=image fade,
-        fit fading=false
-      ] at (TL) {%
-        \usebox{\FrontImgBox}%
-      };
+      % Fade gently into black instead of drawing a visible rectangular box.
+      \fill[black,path fading=front text fade,fit fading=false]
+        (0,0) rectangle (\FrontWidth,.55\FrontClip);
     \end{scope}
 
-    % Dark overlay for text legibility.
-    \begin{scope}
-      \clip (TL) rectangle (BR);
+    % Hairline frame: enough definition for print, without boxing in the art.
+    \draw[black!65,line width=.45pt]
+      (0,0) rectangle (\FrontWidth,\FrontClip);
 
-      \fill[
-        black,
-        opacity=0.30,
-        path fading=image fade
-      ]
-      (BL) rectangle (TR);
-    \end{scope}
-
-    % Headline stack.
     \node[
       anchor=south west,
-      xshift=1em,
-      yshift=1em,
+      fill=black,
+      fill opacity=.56,
+      text opacity=1,
+      rounded corners=1pt,
+      inner sep=.65em,
+      xshift=.35em,
+      yshift=.35em,
       align=left,
-      text width=.75\textwidth
-    ] at (BL) {%
+      text width=\dimexpr\FrontWidth-2em\relax
+    ] at (0,0) {%
       \sffamily
-
-      \if\relax\detokenize{#2}\relax
-      \else
-        {%
-          \owthin[black!85]{%
-            \textsf{\bfseries\small #2}%
-          }%
-        }\\[0.15em]
+      \if\relax\detokenize{#2}\relax\else
+        {\bfseries\small\color{white}%
+          \colorbox{FrontRed}{\strut\hspace{.35em}#2\hspace{.35em}}}%
+        \par\smallskip
       \fi
-
-      {%
-        \ow{%
-          \bfseries
-          \resizebox{\textwidth}{!}{#3}%
-        }%
-      }\\[0.2em]
-
-      {%
-        \owthin{%
-          \large
-          \itshape
-          #4%
-        }%
-      }%
+      {\bfseries\color{white}\resizebox{\linewidth}{!}{#3}}\par
+      {\color{FrontRed}\rule{\linewidth}{1.1pt}}\par\smallskip
+      {\large\color{white}#4}%
     };
 
-    % Image credit.
-    \node[
-      anchor=south east,
-      xshift=-1em,
-      yshift=1em
-    ] at (BR) {%
-      \sffamily
-      \small
-      \owthin[black!85]{#5}%
-    };
-  \end{tikzpicture}%
+    \if\relax\detokenize{#5}\relax\else
+      \node[
+        anchor=north east,
+        fill=black,
+        fill opacity=.55,
+        text opacity=1,
+        inner sep=3pt,
+        xshift=-.5em,
+        yshift=-.5em
+      ] at (\FrontWidth,\FrontClip) {\sffamily\scriptsize\color{white}#5};
+  \fi
+  \end{tikzpicture}}%
+  \par
+}
+
+% A compact issue line gives the masthead a repeatable newspaper structure.
+\newcommand{\FrontIssueLine}[1]{%
+  \par\smallskip
+  \noindent
+  \makebox[\textwidth]{%
+    {\color{FrontRed}\rule[.55ex]{.32\textwidth}{.7pt}}%
+    \hfill{\sffamily\bfseries\small #1}\hfill
+    {\color{FrontRed}\rule[.55ex]{.32\textwidth}{.7pt}}%
+  }%
+  \par\medskip
 }
 
 % ====== Information box ======
@@ -414,15 +401,16 @@
 % FRONT PAGE
 % ============================================================
 
+\thispagestyle{empty}
+\enlargethispage{20mm}
+
 \begin{center}
   \includegraphics[
     width=0.98\textwidth
   ]{Logo.png}
 \end{center}
 
-\begin{center}
-  {\Large\sffamily Udgave 136}
-\end{center}
+\FrontIssueLine{UDGAVE 136}
 
 \FrontFeatureImage
   {assets/royal/front-den-roede-trone-v2.png}
@@ -430,8 +418,6 @@
   {DEN RØDE TRONE STÅR TOM}
   {Syndicatet mistænkes, mens fire parter ruster til borgerkrig}
   {}
-
-\vspace{.75\baselineskip}
 
 \newpage
 
@@ -527,92 +513,6 @@ På de følgende sider bringer vi kejserfamiliens stamtræ og en oversigt over d
 
 \input{royal-family.tex}
 
-% ============================================================
-% INTERVIEW MED SØLVRAVNENS PRÆST
-% ============================================================
-
-\clearpage
-
-\kicker{TRO \& SAMFUND}
-\par\medskip
-
-\headline{HVAD VIL DET SIGE\\ AT FØLGE SØLVRAVNEN?}
-
-\par\medskip
-
-\deck{Celina, Sølvravnen, er blandt de nyeste guder i Kalish. 
-Men hvad betyder hendes ophøjelse egentlig for dem, der vælger at følge hende? 
-Gert Günther Gammelgaard har talt med en af hendes nye præster.}
-
-\par\medskip
-
-\byline{Gert Günther Gammelgaard}
-
-\medskip
-
-\lettrine[lines=2,lhang=0.1,loversize=0.05]{D}{er}
-er ikke gået lang tid, siden Celina Coco blev ophøjet og tog navnet Sølvravnen. 
-Alligevel er de første præster allerede begyndt at samle sig omkring hendes lære.
-
-Jeg satte mig derfor ned med en af dem for at stille det måske mest oplagte spørgsmål:
-
-\medskip
-
-\textbf{Gert Günther Gammelgaard: Hvis du skulle forklare Sølvravnen til én, der aldrig havde hørt om hende før, hvad ville du så sige?}
-
-\textit{Præsten:} At hun er en gud for omsorg. Men omsorg skal forstås som mere end venlige ord. 
-Det handler om at hjælpe de mennesker, der står omkring dig. Din familie, dine venner, dit folk. 
-Hvis nogen falder, hjælper du dem op.
-
-\medskip
-
-\textbf{Men skal man så hjælpe alle?}
-
-Man skal hjælpe, hvor man kan. Men Sølvravnen forventer ikke, at du ødelægger dig selv for fremmede, mens dine egne lider.
-
-Omsorg begynder tæt på dig.
-
-\begin{pullquote}
-``Omsorg er ikke noget, du siger. Det er noget, du gør.''
-\end{pullquote}
-
-\textbf{Celina havde selv et noget... anstrengt forhold til penge. Hvordan passer det sammen med hendes lære?}
-
-Præsten ler.
-
-Det gør det måske netop meget godt.
-
-Hun kendte værdien af en mønt, fordi hun ofte manglede dem. Hun vidste også, hvad det betød at skylde andre noget.
-
-Gæld handler ikke kun om penge. Hvis nogen har hjulpet dig, så husker du det. Hvis du giver dit ord, så holder du det.
-
-\medskip
-
-\textbf{Så rigdom er forkert?}
-
-Overhovedet ikke. Rigdom kan bruges til meget godt.
-
-Men hvis du har et fyldt bord, mens dine nærmeste sulter, så har du misforstået noget.
-
-\medskip
-
-\textbf{Musik og natur nævnes også ofte sammen med Sølvravnen. Hvorfor?}
-
-Fordi livet ikke kun handler om at overleve.
-
-En sang, et godt måltid, en aften omkring et bål eller en vandring gennem skoven kan være lige så vigtig for et menneske som mønter.
-
-Glæde er også noget, vi giver til hinanden.
-
-\medskip
-
-\textbf{Hvis nogen læser dette og overvejer at følge Sølvravnen, hvad skal de så gøre?}
-
-Præsten tænker et øjeblik.
-
-``Begynd med den næste person, der har brug for dig.''
-
-\separator
 
 \clearpage
 \includegraphics[width=1\textwidth]{Drakka.png}
